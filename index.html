@@ -10,13 +10,11 @@
 <body>
 
     <div id="menuScreen" class="screen">
-        
         <div class="top-bar">
             <div class="wood-panel profile-panel">
                 <span class="panel-title">PSEUDO</span>
                 <span class="panel-subtitle">RANG DIAMANT IV <i class="fas fa-gem"></i></span>
             </div>
-            
             <div class="wood-panel points-panel">
                 <span><i class="fas fa-shield-alt"></i> CHESSPOINT 2450</span>
             </div>
@@ -25,23 +23,69 @@
         <h1 class="main-title">CHESS BATTLE</h1>
 
         <div class="menu-buttons">
-            <button id="btn10min" class="menu-btn">LANCER UNE PARTIE 10 MIN</button>
-            <button id="btn3min" class="menu-btn">LANCER UNE PARTIE 3 MIN</button>
-            <button id="btnShop" class="menu-btn">BOUTIQUE</button>
+            <button id="btnAI" class="menu-btn">JOUER CONTRE L'IA 🤖</button>
+            <button id="btn10min" class="menu-btn">1 VS 1 (10 MIN)</button>
+            <button id="btn3min" class="menu-btn">BLITZ (3 MIN)</button>
         </div>
     </div>
 
     <div id="gameScreen" class="screen hidden">
-        
         <button id="backToMenu" class="back-btn">⬅ Menu</button>
 
-        <div class="game-container">
-            <div class="board" id="chessBoard"></div>
+        <div class="game-layout">
+            
+            <div class="board-wrapper">
+                
+                <div class="hud top-hud">
+                    <div class="player-info">
+                        <div class="avatar-mini" style="background:#333; color:white;">♟</div>
+                        <span>ADVERSAIRE</span>
+                    </div>
+                    <div class="graveyard" id="graveyardBlack"></div> 
+                    <div class="timer" id="timerBlack">10:00</div>
+                </div>
+
+                <div class="board" id="chessBoard"></div>
+
+                <div class="hud bottom-hud">
+                    <div class="player-info">
+                        <div class="avatar-mini" style="background:#eee; color:black;">♙</div>
+                        <span>MOI</span>
+                    </div>
+                    <div class="graveyard" id="graveyardWhite"></div>
+                    <div class="timer" id="timerWhite">10:00</div>
+                </div>
+
+            </div>
 
             <div class="card" id="infoCard">
                 <div class="avatar" id="cardAvatar"></div>
-                <h2 id="cardTitle">Sélectionnez une pièce</h2>
-                <p id="cardDesc">Cliquez sur une pièce pour voir ses stats.</p>
+                <h2 id="cardTitle">Prêt ?</h2>
+                <p id="cardDesc">La partie va commencer.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="promotionModal" class="modal hidden">
+        <div class="wood-panel modal-content">
+            <h2>PROMOTION !</h2>
+            <p>Choisissez votre destinée :</p>
+            <div class="promo-options">
+                <div class="promo-option" data-type="queen">♛</div>
+                <div class="promo-option" data-type="rook">♜</div>
+                <div class="promo-option" data-type="bishop">♝</div>
+                <div class="promo-option" data-type="knight">♞</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="difficultyModal" class="modal hidden">
+        <div class="wood-panel modal-content">
+            <h2>NIVEAU DE L'IA</h2>
+            <div class="menu-buttons" style="margin-top:20px;">
+                <button class="menu-btn ai-option" data-level="easy">FACILE (Aléatoire)</button>
+                <button class="menu-btn ai-option" data-level="medium">MOYEN (Aggressif)</button>
+                <button class="menu-btn ai-option" data-level="hard">DIFFICILE (Stratège)</button>
             </div>
         </div>
     </div>
