@@ -1,0 +1,64 @@
+/* RESET & LAYOUT */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #222;
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; font-family: sans-serif; gap: 50px;
+}
+
+/* PLATEAU */
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    border: 10px solid #515151;
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.square {
+    width: 60px; height: 60px;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; /* Important pour cliquer sur les cases vides */
+}
+.white-square { background-color: #eeeed2; }
+.black-square { background-color: #769656; }
+.square:hover { filter: brightness(1.2); }
+
+/* PIECES */
+.piece {
+    font-size: 40px; cursor: grab; user-select: none;
+    transition: transform 0.2s;
+    pointer-events: none; /* ASTUCE : Le clic traverse la pièce pour aller sur la case */
+}
+
+/* UI CARTE */
+.card {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    background-color: #515151; color: white; padding: 20px;
+    border-radius: 12px; width: 260px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.2s;
+}
+.avatar {
+    width: 60px; height: 60px; background-color: #333;
+    border-radius: 8px; margin-bottom: 5px;
+    display: flex; justify-content: center; align-items: center; font-size: 30px;
+}
+h2 { font-size: 18px; font-weight: bold; }
+p { font-size: 14px; text-align: center; opacity: 0.8; line-height: 1.4; }
+
+/* NOUVEAU : Case sélectionnée (en jaune) */
+.selected {
+    background-color: #f5f682 !important; /* Le jaune force par dessus le vert/blanc */
+}
+
+/* Quand le Roi est en échec */
+.king-in-check {
+    background: radial-gradient(circle, #ff4b4b 20%, transparent 80%) !important;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 75, 75, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }
+}
