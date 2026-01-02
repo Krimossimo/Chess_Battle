@@ -2,17 +2,48 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Battle</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <div class="board" id="chessBoard"></div>
+    <div id="menuScreen" class="screen">
+        
+        <div class="top-bar">
+            <div class="wood-panel profile-panel">
+                <span class="panel-title">PSEUDO</span>
+                <span class="panel-subtitle">RANG DIAMANT IV <i class="fas fa-gem"></i></span>
+            </div>
+            
+            <div class="wood-panel points-panel">
+                <span><i class="fas fa-shield-alt"></i> CHESSPOINT 2450</span>
+            </div>
+        </div>
 
-    <div class="card" id="infoCard">
-        <div class="avatar" id="cardAvatar"></div>
-        <h2 id="cardTitle">Sélectionnez une pièce</h2>
-        <p id="cardDesc">Cliquez sur une pièce pour voir ses stats.</p>
+        <h1 class="main-title">CHESS BATTLE</h1>
+
+        <div class="menu-buttons">
+            <button id="btn10min" class="menu-btn">LANCER UNE PARTIE 10 MIN</button>
+            <button id="btn3min" class="menu-btn">LANCER UNE PARTIE 3 MIN</button>
+            <button id="btnShop" class="menu-btn">BOUTIQUE</button>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="screen hidden">
+        
+        <button id="backToMenu" class="back-btn">⬅ Menu</button>
+
+        <div class="game-container">
+            <div class="board" id="chessBoard"></div>
+
+            <div class="card" id="infoCard">
+                <div class="avatar" id="cardAvatar"></div>
+                <h2 id="cardTitle">Sélectionnez une pièce</h2>
+                <p id="cardDesc">Cliquez sur une pièce pour voir ses stats.</p>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="js/main.js"></script>

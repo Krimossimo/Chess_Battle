@@ -1,64 +1,269 @@
-/* RESET & LAYOUT */
+/* ========================
+   GLOBAL & FOND
+   ======================== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    background-color: #222;
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; font-family: sans-serif; gap: 50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    /* Fond effet bois global (si tu n'as pas l'image, on simule avec une couleur) */
+    background: #debb94; 
+    background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 40px);
 }
 
-/* PLATEAU */
+/* Gestion des écrans (Menu vs Jeu) */
+.screen {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: absolute; top: 0; left: 0;
+    transition: opacity 0.5s;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ========================
+   STYLE DU MENU (WOOD)
+   ======================== */
+
+/* 1. Barres du haut (Plaques en bois) */
+.top-bar {
+    position: absolute; top: 40px;
+    width: 100%;
+    display: flex; justify-content: space-between;
+    padding: 0 40px;
+}
+
+.wood-panel {
+    background: #e4c49f; /* Couleur bois clair */
+    border: 3px solid #bfa07a;
+    border-radius: 8px;
+    padding: 15px 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 2px 5px rgba(255,255,255,0.4);
+    color: #3b4a6b; /* Bleu foncé pour le texte */
+    font-weight: bold;
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 250px;
+}
+
+.panel-title { font-size: 14px; opacity: 0.8; letter-spacing: 1px; }
+.panel-subtitle { font-size: 18px; margin-top: 5px; color: #2c3e50; }
+.points-panel { font-size: 20px; flex-direction: row; justify-content: center; gap: 10px; }
+
+/* 2. Titre Principal */
+.main-title {
+    font-size: 60px;
+    color: #34495e;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.3);
+    margin-bottom: 60px;
+    letter-spacing: 3px;
+    margin-top: 50px;
+}
+
+/* 3. Boutons Bleus */
+.menu-buttons {
+    display: flex; flex-direction: column; gap: 20px;
+}
+
+.menu-btn {
+    background-color: #2c5282; /* Le bleu de ton image */
+    color: white;
+    border: none;
+    padding: 18px 60px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #1a365d, 0 15px 20px rgba(0,0,0,0.4); /* Effet 3D */
+    transition: all 0.1s;
+    width: 350px;
+    text-transform: uppercase;
+}
+
+.menu-btn:hover {
+    background-color: #31629e;
+    transform: translateY(-2px);
+}
+
+.menu-btn:active {
+    transform: translateY(4px); /* Effet d'enfoncement */
+    box-shadow: 0 2px 0 #1a365d, 0 5px 10px rgba(0,0,0,0.4);
+}
+
+/* ========================
+   STYLE DU JEU (Adaptation Wood)
+   ======================== */
+
+/* Conteneur principal du jeu */
+.game-container {
+    display: flex;
+    gap: 60px; /* Un peu plus d'espace entre le plateau et la carte */
+    align-items: center;
+    /* Petit effet d'ombre sous le tout pour le détacher du fond */
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));
+}
+
+/* 1. NOUVEAU STYLE DU BOUTON RETOUR (Style "Mini Menu Blue") */
+.back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background-color: #2c5282; /* Bleu du menu */
+    color: white;
+    border: none;
+    padding: 12px 30px; /* Plus petit que les gros boutons du menu */
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #1a365d, 0 5px 10px rgba(0,0,0,0.3); /* Effet 3D */
+    transition: all 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.back-btn:hover {
+    background-color: #31629e;
+    transform: translateY(-2px);
+}
+
+.back-btn:active {
+    transform: translateY(2px); /* Effet d'enfoncement */
+    box-shadow: 0 2px 0 #1a365d;
+}
+
+
+/* 2. NOUVEAU STYLE DU PLATEAU (Cadre en bois massif) */
 .board {
     display: grid;
-    grid-template-columns: repeat(8, 60px);
-    grid-template-rows: repeat(8, 60px);
-    border: 10px solid #515151;
-    border-radius: 4px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    grid-template-columns: repeat(8, 70px); /* Cases un peu plus grandes pour l'impact */
+    grid-template-rows: repeat(8, 70px);
+    /* Le cadre en bois : couleur foncée + bordure épaisse */
+    border: 15px solid #bfa07a; 
+    border-radius: 12px;
+    /* Ombre interne pour donner de la profondeur au plateau */
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    background-color: #4a3b2a; /* Fond sombre sous les cases */
 }
+
+/* Les cases (on ajuste la taille) */
 .square {
-    width: 60px; height: 60px;
+    width: 70px;
+    height: 70px;
     display: flex; justify-content: center; align-items: center;
-    cursor: pointer; /* Important pour cliquer sur les cases vides */
+    cursor: pointer;
+    font-family: 'Segoe UI Emoji', serif; /* Meilleure police pour les émojis */
 }
-.white-square { background-color: #eeeed2; }
-.black-square { background-color: #769656; }
-.square:hover { filter: brightness(1.2); }
 
-/* PIECES */
+/* Couleurs des cases (Légèrement ajustées pour aller avec le bois) */
+.white-square { background-color: #e8dfbc; color: black; }
+.black-square { background-color: #966f4b; color: black; }
+/* ========================
+   3. LES PIÈCES (STYLE FINAL UNIFORME)
+   ======================== */
+
 .piece {
-    font-size: 40px; cursor: grab; user-select: none;
+    font-size: 45px;
+    cursor: grab;
+    user-select: none;
+    pointer-events: none;
     transition: transform 0.2s;
-    pointer-events: none; /* ASTUCE : Le clic traverse la pièce pour aller sur la case */
+    
+    /* 1. ON CACHE LE SYMBOLE D'ORIGINE (le texte HTML) */
+    color: transparent !important;
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
 }
 
-/* UI CARTE */
+/* 2. ON CRÉE LE NOUVEAU SYMBOLE VISUEL (::after) */
+.piece::after {
+    position: absolute;
+    visibility: visible;
+    font-family: 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+    /* Par défaut, on met la forme du pion plein */
+    content: "♟"; 
+}
+
+/* --- LE MAPPING DES FORMES (On force tout le monde en "Solid") --- */
+/* Peu importe si c'est blanc ou noir, on veut la forme pleine */
+.piece[data-type="pawn"]::after   { content: "♟"; }
+.piece[data-type="rook"]::after   { content: "♜"; }
+.piece[data-type="knight"]::after { content: "♞"; }
+.piece[data-type="bishop"]::after { content: "♝"; }
+.piece[data-type="queen"]::after  { content: "♛"; }
+.piece[data-type="king"]::after   { content: "♚"; }
+
+/* --- LES COULEURS (C'est ici que la magie opère !) --- */
+
+/* ÉQUIPE BLANCHE : Blanc Pur + Ombre sombre */
+.piece[data-team="white"]::after {
+    color: #ffffff; 
+    text-shadow: 
+        0 0 2px rgba(0,0,0,0.8), /* Contour noir fin pour la netteté */
+        0 4px 6px rgba(0,0,0,0.4); /* Ombre portée 3D */
+}
+
+/* ÉQUIPE NOIRE : Noir Profond + Ombre claire */
+.piece[data-team="black"]::after {
+    color: #1a1a1a;
+    text-shadow: 
+        0 0 2px rgba(255,255,255,0.3), /* Contour clair fin pour détacher du fond */
+        0 4px 6px rgba(0,0,0,0.5); /* Ombre portée 3D */
+}
+
+/* Animation au clic */
+.piece:active { transform: scale(1.2); cursor: grabbing; }
+
+
+/* 3. NOUVEAU STYLE DE LA CARTE INFO (Style "Wood Panel" du menu) */
 .card {
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    background-color: #515151; color: white; padding: 20px;
-    border-radius: 12px; width: 260px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.2s;
+    /* On réutilise exactement le style des panneaux du menu */
+    background: #e4c49f; /* Bois clair */
+    border: 4px solid #bfa07a; /* Bordure bois foncé */
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.4);
+    color: #3b4a6b; /* Texte bleu foncé */
+    
+    display: flex; flex-direction: column; align-items: center; gap: 15px;
+    width: 300px;
+    transition: transform 0.2s ease;
 }
+
+/* L'avatar dans la carte */
 .avatar {
-    width: 60px; height: 60px; background-color: #333;
-    border-radius: 8px; margin-bottom: 5px;
-    display: flex; justify-content: center; align-items: center; font-size: 30px;
-}
-h2 { font-size: 18px; font-weight: bold; }
-p { font-size: 14px; text-align: center; opacity: 0.8; line-height: 1.4; }
-
-/* NOUVEAU : Case sélectionnée (en jaune) */
-.selected {
-    background-color: #f5f682 !important; /* Le jaune force par dessus le vert/blanc */
+    width: 80px; height: 80px;
+    background-color: #bfa07a; /* Fond bois foncé */
+    border-radius: 12px;
+    margin-bottom: 5px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 45px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); /* Effet gravé */
 }
 
-/* Quand le Roi est en échec */
-.king-in-check {
-    background: radial-gradient(circle, #ff4b4b 20%, transparent 80%) !important;
-    animation: pulse 1s infinite;
+/* Typographie de la carte */
+.card h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(255, 75, 75, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }
+.card p {
+    font-size: 16px;
+    text-align: center;
+    color: #3b4a6b;
+    opacity: 0.9;
+    line-height: 1.5;
+    font-weight: 500;
 }
+
+/* RESTE DU CSS (Ne pas toucher) */
+.piece { font-size: 45px; cursor: grab; user-select: none; pointer-events: none; transition: transform 0.2s; }
+.selected { background-color: rgba(245, 246, 130, 0.6) !important; box-shadow: inset 0 0 10px #e2e44b; }
+.king-in-check { background: radial-gradient(circle, #ff4b4b 40%, transparent 80%) !important; animation: pulse 1s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 75, 75, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); } }

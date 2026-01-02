@@ -1,18 +1,22 @@
 // js/main.js
 import { piecesInfo, initialBoardSetup } from './data.js';
-// Note : on importe maintenant isMoveSafe, isSquareAttacked et findKing
 import { isMoveSafe, isSquareAttacked, findKing } from './rules.js';
 
 const boardElement = document.getElementById('chessBoard');
 let selectedSquare = null;
 let currentTurn = 'white';
 
+// --- MISE A JOUR UI ---
 function updateCard(symbol) {
     const info = piecesInfo[symbol];
     if (info) {
         document.getElementById('cardTitle').innerText = info.name;
         document.getElementById('cardDesc').innerText = info.desc;
-        document.getElementById('cardAvatar').style.backgroundColor = info.color;
+        // On remet la couleur du bois pour l'avatar car l'image est gérée par le CSS maintenant
+        document.getElementById('cardAvatar').style.backgroundColor = "#bfa07a"; 
+        
+        // Petite astuce : on affiche le symbole dans l'avatar en utilisant le même style que les pièces
+        // Mais pour faire simple ici, on affiche juste le texte, le CSS de la carte gèrera le reste
         document.getElementById('cardAvatar').innerText = symbol;
     }
 }
@@ -29,12 +33,10 @@ function checkGameStatus() {
     const enemyTeam = (currentTurn === 'white') ? 'black' : 'white';
 
     // Est-il attaqué ?
-    if (isSquareAttacked(kingSquare, enemyTeam)) {
+    if (kingSquare && isSquareAttacked(kingSquare, enemyTeam)) {
         kingSquare.classList.add('king-in-check');
         document.getElementById('cardTitle').innerText = "⚠️ ÉCHEC !";
         document.getElementById('cardDesc').innerText = "Sauvez le Roi " + currentTurn + " !";
-        // Petit son d'alerte (optionnel)
-        // new Audio('alert.mp3').play();
     }
 }
 
@@ -44,7 +46,7 @@ function switchTurn() {
     document.getElementById('cardTitle').innerText = (currentTurn === 'white') ? "Tour des Blancs ♙" : "Tour des Noirs ♟";
     document.getElementById('cardDesc').innerText = "À vous de jouer !";
     document.getElementById('cardAvatar').innerText = "";
-    document.getElementById('cardAvatar').style.backgroundColor = "#333";
+    document.getElementById('cardAvatar').style.backgroundColor = "#bfa07a"; 
 
     // À chaque changement de tour, on regarde si le nouveau joueur est en échec
     checkGameStatus();
@@ -57,24 +59,28 @@ function handleSquareClick(square) {
     if (selectedSquare) {
         const pieceSymbol = selectedSquare.innerText;
         
-        // --- CHANGEMENT ICI : On utilise isMoveSafe ---
         // Cette fonction vérifie la géométrie ET si le Roi est protégé
         if (isMoveSafe(selectedSquare, square, pieceSymbol)) {
             
             // Mouvement validé
             if (square.innerText !== "") console.log("Capture !");
 
-            square.innerText = pieceSymbol;
+            // On déplace le contenu HTML complet (pour garder les data-attributes et le style !)
             square.innerHTML = selectedSquare.innerHTML; 
             
+            // On met à jour le texte (utile pour la logique JS)
+            square.innerText = pieceSymbol; 
+            
+            // Nettoyage de l'ancienne case
             selectedSquare.innerHTML = '';
+            selectedSquare.innerText = ''; // Important pour vider le texte logique
             selectedSquare.classList.remove('selected');
             selectedSquare = null;
 
             switchTurn();
             
         } else {
-            // Mouvement invalide (ou dangereux pour le Roi)
+            // Mouvement invalide
             if (content !== "") {
                 const pieceData = piecesInfo[content];
                 if (pieceData && pieceData.team === currentTurn) {
@@ -84,8 +90,8 @@ function handleSquareClick(square) {
                     updateCard(content);
                 }
             } else {
-                // Petit effet visuel pour dire "Interdit !"
-                square.classList.add('error-shake'); // (Tu peux ajouter cette anim en CSS si tu veux)
+                // Erreur visuelle
+                square.classList.add('error-shake');
                 setTimeout(() => square.classList.remove('error-shake'), 200);
             }
         }
@@ -103,8 +109,10 @@ function handleSquareClick(square) {
     }
 }
 
+// --- INITIALISATION DU PLATEAU ---
 function createBoard() {
     boardElement.innerHTML = '';
+    
     for (let i = 0; i < 64; i++) {
         const square = document.createElement('div');
         square.classList.add('square');
@@ -121,6 +129,15 @@ function createBoard() {
             const piece = document.createElement('span');
             piece.classList.add('piece');
             piece.innerText = pieceSymbol;
+
+            // --- C'EST ICI QUE TOUT SE JOUE POUR LE STYLE ---
+            const pieceData = piecesInfo[pieceSymbol];
+            if (pieceData) {
+                 piece.dataset.team = pieceData.team; // 'white' ou 'black'
+                 piece.dataset.type = pieceData.type; // 'pawn', 'rook', etc.
+            }
+            // -----------------------------------------------
+
             square.appendChild(piece);
         }
 
@@ -129,4 +146,37 @@ function createBoard() {
     }
 }
 
+// Lancement du plateau
 createBoard();
+
+
+// ==========================================
+// LOGIQUE DU MENU
+// ==========================================
+
+const menuScreen = document.getElementById('menuScreen');
+const gameScreen = document.getElementById('gameScreen');
+
+// Fonction pour lancer le jeu
+function startGame(timeControl) {
+    console.log(`Lancement de la partie : ${timeControl}`);
+    menuScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+}
+
+// Fonction pour revenir au menu
+function backToMenu() {
+    gameScreen.classList.add('hidden');
+    menuScreen.classList.remove('hidden');
+}
+
+// Ecouteurs d'événements (Clicks)
+// Le ?. permet d'éviter les erreurs si les boutons ne sont pas chargés
+document.getElementById('btn10min')?.addEventListener('click', () => startGame('10min'));
+document.getElementById('btn3min')?.addEventListener('click', () => startGame('3min'));
+
+document.getElementById('btnShop')?.addEventListener('click', () => {
+    alert("La boutique sera disponible bientôt ! Préparez vos ChessPoints.");
+});
+
+document.getElementById('backToMenu')?.addEventListener('click', backToMenu);
