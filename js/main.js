@@ -1,6 +1,8 @@
 // js/main.js
 import { piecesInfo, initialBoardSetup } from './data.js';
 import { isMoveSafe, isSquareAttacked, findKing } from './rules.js';
+import { initAuthListener, logout } from './auth.js';
+import { initSocialSystem } from './social.js';
 
 const boardElement = document.getElementById('chessBoard');
 const promoModal = document.getElementById('promotionModal');
@@ -12,17 +14,55 @@ const timerBlackEl = document.getElementById('timerBlack');
 const graveyardWhite = document.getElementById('graveyardWhite');
 const graveyardBlack = document.getElementById('graveyardBlack');
 
+// GESTION BOUTIQUE
+const btnShop = document.getElementById('btnShop');
+const shopScreen = document.getElementById('shopScreen');
+const backFromShop = document.getElementById('backFromShop');
+const shopPointsDisplay = document.getElementById('shopPointsDisplay');
+
 let selectedSquare = null;
 let currentTurn = 'white';
 let promotionCallback = null;
 let isVsAI = false;
 let aiLevel = 'easy';
+let currentUserPoints = 0; // Variable remontée ici
 
 // TIME
 let timeWhite = 600;
 let timeBlack = 600;
 let timerInterval = null;
 let gameActive = false;
+
+// --- INITIALISATION UNIQUE ---
+initAuthListener((userData) => {
+    // 1. Mise à jour de l'interface Profil
+    updateProfileUI(userData);
+    
+    // 2. Sauvegarde des points pour la boutique
+    currentUserPoints = userData.points;
+
+    // ON LANCE LE SOCIAL ICI
+    initSocialSystem(userData); 
+});
+
+function updateProfileUI(user) {
+    const profilePanel = document.querySelector('.profile-panel');
+    const flags = { 'fr': '🇫🇷', 'be': '🇧🇪', 'ca': '🇨🇦', 'ch': '🇨🇭', 'dz': '🇩🇿', 'ma': '🇲🇦' };
+    const flag = flags[user.country] || '🌍';
+
+    profilePanel.innerHTML = `
+        <span class="panel-title">${user.pseudo.toUpperCase()} ${flag}</span>
+        <span class="panel-subtitle">RANG : ${user.rank}</span>
+        <button id="btnLogout" style="margin-top:5px; padding: 5px; font-size:10px; cursor:pointer; background:#c0392b; color:white; border:none; border-radius:3px;">Déconnexion</button>
+    `;
+
+    document.querySelector('.points-panel span').innerHTML = `<i class="fas fa-shield-alt"></i> ${user.points} PTS`;
+    
+    const gamePseudo = document.getElementById('playerPseudoDisplay');
+    if(gamePseudo) gamePseudo.innerText = user.pseudo.toUpperCase();
+
+    document.getElementById('btnLogout').addEventListener('click', logout);
+}
 
 /* ========================
    TIMER & SCORE
@@ -80,12 +120,10 @@ function addToGraveyard(pieceElement) {
     deadPiece.classList.add('dead-piece');
     deadPiece.dataset.team = pieceElement.dataset.team;
     
-    // On force l'apparence du pion si besoin
     let content = pieceElement.getAttribute('data-content');
     if (pieceElement.dataset.type === 'pawn') content = '♟';
     deadPiece.innerText = content;
 
-    // Si je suis Blanc et je mange du Noir -> Dans mon cimetière
     if (pieceElement.dataset.team === 'black') graveyardWhite.appendChild(deadPiece);
     else graveyardBlack.appendChild(deadPiece);
 }
@@ -219,7 +257,7 @@ function executeMove(startSquare, targetSquare) {
         // Capture
         const captured = targetSquare.querySelector('.piece');
         if (captured) {
-            addToGraveyard(captured); // Ajout au cimetière
+            addToGraveyard(captured);
             captured.remove();
         }
         targetSquare.appendChild(piece);
@@ -282,7 +320,6 @@ function setupPieceEvents(piece, square) {
         piece.classList.remove('dragging');
         clearMoveHints();
     });
-    // PERMET DE LÂCHER SUR UNE PIÈCE ADVERSE
     piece.addEventListener('dragover', e => e.preventDefault());
     piece.addEventListener('drop', e => {
         e.preventDefault(); e.stopPropagation();
@@ -363,19 +400,52 @@ function startGame(mode, difficultyOrTime) {
     
     startTimers(minutes);
     currentTurn = 'white';
-    menuScreen.classList.add('hidden');
+    document.getElementById('menuScreen').classList.add('hidden'); // Corrigé ici
     difficultyModal.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
+    document.getElementById('gameScreen').classList.remove('hidden'); // Corrigé ici
     updateCard('king');
 }
+
 function backToMenu() {
     gameActive = false;
     clearInterval(timerInterval);
-    gameScreen.classList.add('hidden');
-    menuScreen.classList.remove('hidden');
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('menuScreen').classList.remove('hidden');
 }
+
 document.getElementById('btn10min')?.addEventListener('click', () => startGame('pvp', 10));
 document.getElementById('btn3min')?.addEventListener('click', () => startGame('pvp', '3min'));
 document.getElementById('btnAI')?.addEventListener('click', () => difficultyModal.classList.remove('hidden'));
 document.querySelectorAll('.ai-option').forEach(btn => btn.addEventListener('click', () => startGame('ai', btn.dataset.level)));
 document.getElementById('backToMenu')?.addEventListener('click', backToMenu);
+
+// --- LOGIQUE BOUTIQUE (SEPAREE MAIS CONNECTEE) ---
+// 1. OUVRIR LA BOUTIQUE
+if (btnShop) {
+    btnShop.addEventListener('click', () => {
+        document.getElementById('menuScreen').classList.add('hidden');
+        shopScreen.classList.remove('hidden');
+        
+        // Mise à jour de l'affichage des points
+        shopPointsDisplay.innerHTML = `<i class="fas fa-shield-alt"></i> ${currentUserPoints} PTS`;
+    });
+}
+
+// 2. RETOUR AU MENU
+if (backFromShop) {
+    backFromShop.addEventListener('click', () => {
+        shopScreen.classList.add('hidden');
+        document.getElementById('menuScreen').classList.remove('hidden');
+    });
+}
+
+// 3. INTERACTION CARTE
+document.querySelectorAll('.shop-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const originalText = card.querySelector('h3').innerText;
+        card.querySelector('h3').innerText = "Bientôt !";
+        setTimeout(() => {
+            card.querySelector('h3').innerText = originalText;
+        }, 1000);
+    });
+});

@@ -9,55 +9,76 @@
 </head>
 <body>
 
-    <div id="menuScreen" class="screen">
+    <div id="authScreen" class="screen" style="background: #2c3e50; z-index: 200;">
+        <h1 class="main-title" style="color: white; margin-top: 0;">CHESS BATTLE</h1>
+        
+        <div class="wood-panel" style="width: 400px; padding: 40px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="tabLogin" class="menu-btn" style="padding: 10px; font-size: 14px; flex:1; width: auto;">CONNEXION</button>
+                <button id="tabRegister" class="menu-btn" style="padding: 10px; font-size: 14px; flex:1; width: auto; opacity: 0.6;">INSCRIPTION</button>
+            </div>
+
+            <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="email" id="loginEmail" placeholder="Email" required style="padding: 15px; border-radius: 5px; border: none;">
+                <input type="password" id="loginPass" placeholder="Mot de passe" required style="padding: 15px; border-radius: 5px; border: none;">
+                <button type="submit" class="menu-btn" style="background: #27ae60;">SE CONNECTER</button>
+            </form>
+
+            <form id="registerForm" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" id="regPseudo" placeholder="Pseudo Unique" required style="padding: 15px; border-radius: 5px; border: none;">
+                <input type="email" id="regEmail" placeholder="Email" required style="padding: 15px; border-radius: 5px; border: none;">
+                <input type="password" id="regPass" placeholder="Mot de passe (6+ car.)" required style="padding: 15px; border-radius: 5px; border: none;">
+                
+                <select id="regCountry" style="padding: 15px; border-radius: 5px; border: none;">
+                    <option value="fr">🇫🇷 France</option>
+                    <option value="be">🇧🇪 Belgique</option>
+                    <option value="ca">🇨🇦 Canada</option>
+                    <option value="ch">🇨🇭 Suisse</option>
+                    <option value="dz">🇩🇿 Algérie</option>
+                    <option value="ma">🇲🇦 Maroc</option>
+                </select>
+
+                <button type="submit" class="menu-btn" style="background: #e67e22;">CRÉER COMPTE</button>
+            </form>
+            
+            <p id="authError" style="color: #ff6b6b; margin-top: 15px; font-size: 14px; min-height: 20px; text-align: center; font-weight: bold;"></p>
+        </div>
+    </div>
+
+    <div id="menuScreen" class="screen hidden">
         <div class="top-bar">
             <div class="wood-panel profile-panel">
-                <span class="panel-title">PSEUDO</span>
-                <span class="panel-subtitle">RANG DIAMANT IV <i class="fas fa-gem"></i></span>
+                <span class="panel-title">CHARGEMENT...</span>
             </div>
             <div class="wood-panel points-panel">
-                <span><i class="fas fa-shield-alt"></i> CHESSPOINT 2450</span>
+                <span>...</span>
             </div>
         </div>
-
         <h1 class="main-title">CHESS BATTLE</h1>
-
         <div class="menu-buttons">
-            <button id="btnAI" class="menu-btn">JOUER CONTRE L'IA 🤖</button>
+            <button id="btnAI" class="menu-btn">JOUER CONTRE L'IA</button>
             <button id="btn10min" class="menu-btn">1 VS 1 (10 MIN)</button>
             <button id="btn3min" class="menu-btn">BLITZ (3 MIN)</button>
+            <button id="btnShop" class="menu-btn" style="background-color: #e67e22;">BOUTIQUE 🛒</button>
         </div>
     </div>
 
     <div id="gameScreen" class="screen hidden">
         <button id="backToMenu" class="back-btn">⬅ Menu</button>
-
         <div class="game-layout">
-            
             <div class="board-wrapper">
-                
                 <div class="hud top-hud">
-                    <div class="player-info">
-                        <div class="avatar-mini" style="background:#333; color:white;">♟</div>
-                        <span>ADVERSAIRE</span>
-                    </div>
+                    <div class="player-info"><div class="avatar-mini" style="background:#333; color:white;">♟</div><span>ADVERSAIRE</span></div>
                     <div class="graveyard" id="graveyardBlack"></div> 
                     <div class="timer" id="timerBlack">10:00</div>
                 </div>
-
                 <div class="board" id="chessBoard"></div>
-
                 <div class="hud bottom-hud">
-                    <div class="player-info">
-                        <div class="avatar-mini" style="background:#eee; color:black;">♙</div>
-                        <span>MOI</span>
-                    </div>
+                    <div class="player-info"><div class="avatar-mini" style="background:#eee; color:black;">♙</div><span id="playerPseudoDisplay">MOI</span></div>
                     <div class="graveyard" id="graveyardWhite"></div>
                     <div class="timer" id="timerWhite">10:00</div>
                 </div>
-
             </div>
-
             <div class="card" id="infoCard">
                 <div class="avatar" id="cardAvatar"></div>
                 <h2 id="cardTitle">Prêt ?</h2>
@@ -69,7 +90,6 @@
     <div id="promotionModal" class="modal hidden">
         <div class="wood-panel modal-content">
             <h2>PROMOTION !</h2>
-            <p>Choisissez votre destinée :</p>
             <div class="promo-options">
                 <div class="promo-option" data-type="queen">♛</div>
                 <div class="promo-option" data-type="rook">♜</div>
@@ -78,14 +98,149 @@
             </div>
         </div>
     </div>
-
     <div id="difficultyModal" class="modal hidden">
         <div class="wood-panel modal-content">
-            <h2>NIVEAU DE L'IA</h2>
+            <h2>NIVEAU IA</h2>
             <div class="menu-buttons" style="margin-top:20px;">
-                <button class="menu-btn ai-option" data-level="easy">FACILE (Aléatoire)</button>
-                <button class="menu-btn ai-option" data-level="medium">MOYEN (Aggressif)</button>
-                <button class="menu-btn ai-option" data-level="hard">DIFFICILE (Stratège)</button>
+                <button class="menu-btn ai-option" data-level="easy">FACILE</button>
+                <button class="menu-btn ai-option" data-level="medium">MOYEN</button>
+                <button class="menu-btn ai-option" data-level="hard">DIFFICILE</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="btnSocial" class="settings-float-btn" style="left: 20px; right: auto;">
+        <i class="fas fa-users"></i>
+        <span id="notifBadge" class="hidden" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:red; border-radius:50%; border:2px solid white;"></span>
+    </button>
+
+    <div id="socialModal" class="modal hidden">
+        <div class="wood-panel modal-content" style="width: 500px; text-align: left; min-height: 400px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">LISTE D'AMIS</h2>
+                <button id="closeSocial" style="background:none; border:none; color:#c0392b; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+
+            <div class="setting-group" style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
+                <label>Ajouter un ami (par Pseudo)</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="searchFriendInput" class="setting-input" placeholder="Ex: KASPAROV">
+                    <button id="btnSearchFriend" class="setting-btn-small">ENVOYER</button>
+                </div>
+                <p id="socialFeedback" style="font-size:12px; margin-top:5px; min-height:15px;"></p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #bfa07a; margin: 15px 0;">
+
+            <div id="requestsSection" class="hidden">
+                <h4 style="color:#e67e22; margin-bottom:10px;">DEMANDES EN ATTENTE</h4>
+                <div id="requestsList" class="friend-list"></div>
+                <hr style="border: 0; border-top: 1px solid #bfa07a; margin: 15px 0;">
+            </div>
+
+            <h4 style="color:#2c3e50; margin-bottom:10px;">MES AMIS</h4>
+            <div id="friendsList" class="friend-list">
+                <p style="text-align:center; color:#666; font-style:italic;">Aucun ami connecté.</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="btnSettings" class="settings-float-btn hidden">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <div id="settingsModal" class="modal hidden">
+        <div class="wood-panel modal-content" style="width: 450px; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">PARAMÈTRES</h2>
+                <button id="closeSettings" style="background:none; border:none; color:#c0392b; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+
+            <div class="setting-group">
+                <label>Modifier Pseudo (1x / mois)</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="setPseudo" class="setting-input">
+                    <button id="savePseudo" class="setting-btn-small">OK</button>
+                </div>
+                <small id="pseudoMsg" style="color:#666; font-size:11px;"></small>
+            </div>
+
+            <div class="setting-group">
+                <label>Pays</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="setCountry" class="setting-input">
+                        <option value="fr">🇫🇷 France</option>
+                        <option value="be">🇧🇪 Belgique</option>
+                        <option value="ca">🇨🇦 Canada</option>
+                        <option value="ch">🇨🇭 Suisse</option>
+                        <option value="dz">🇩🇿 Algérie</option>
+                        <option value="ma">🇲🇦 Maroc</option>
+                    </select>
+                    <button id="saveCountry" class="setting-btn-small">OK</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Nouvel Email</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="email" id="setEmail" class="setting-input">
+                    <button id="saveEmail" class="setting-btn-small">OK</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Nouveau Mot de Passe</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="password" id="setPass" class="setting-input" placeholder="6 caractères min.">
+                    <button id="savePass" class="setting-btn-small">OK</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #bfa07a; margin: 20px 0;">
+
+            <div style="text-align: center;">
+                <button id="btnDeleteAccount" style="background:#c0392b; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold;">
+                    ⚠️ SUPPRIMER MON COMPTE
+                </button>
+            </div>
+            
+            <p id="settingsFeedback" style="text-align:center; margin-top:10px; font-weight:bold; min-height:20px;"></p>
+        </div>
+    </div>
+
+    <div id="shopScreen" class="screen hidden">
+        
+        <div class="top-bar" style="position: relative; top: 0; margin-bottom: 30px; width: 90%; max-width: 1000px;">
+            <button id="backFromShop" class="back-btn" style="position: relative; top: auto; left: auto;">
+                <i class="fas fa-arrow-left"></i> MENU
+            </button>
+            
+            <div class="wood-panel points-panel" style="min-width: 300px;">
+                <span id="shopPointsDisplay"><i class="fas fa-shield-alt"></i> CHARGEMENT...</span>
+            </div>
+        </div>
+
+        <div class="shop-grid">
+            <div class="wood-panel shop-card">
+                <i class="fas fa-chess-board shop-icon"></i>
+                <h3>PLATEAU</h3>
+            </div>
+            <div class="wood-panel shop-card">
+                <i class="fas fa-magic shop-icon"></i>
+                <h3>ANIMATIONS</h3>
+            </div>
+            <div class="wood-panel shop-card">
+                <i class="fas fa-chess-pawn shop-icon"></i>
+                <h3>PIONS</h3>
+            </div>
+
+            <div class="wood-panel shop-card">
+                <i class="fas fa-user-circle shop-icon"></i>
+                <h3>AVATAR</h3>
+            </div>
+            <div class="wood-panel shop-card">
+                <i class="fas fa-flag shop-icon"></i>
+                <h3>BANNIERE</h3>
             </div>
         </div>
     </div>

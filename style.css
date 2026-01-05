@@ -156,3 +156,123 @@ body {
 .promo-option { font-size: 50px; width: 70px; height: 70px; background: #4a3b2a; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; border: 2px solid #bfa07a; transition: transform 0.2s; }
 .promo-option:hover { transform: scale(1.2); background: #2c5282; }
 @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+/* BOUTON PARAMÈTRES FLOTTANT */
+.settings-float-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #2c3e50;
+    color: white;
+    border: 4px solid #bfa07a;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    z-index: 150;
+    transition: transform 0.2s;
+    display: flex; justify-content: center; align-items: center;
+}
+.settings-float-btn:hover {
+    transform: scale(1.1) rotate(90deg); /* Petite animation stylée */
+    background-color: #34495e;
+}
+
+/* CONTENU DE LA MODALE PARAMÈTRES */
+.setting-group { margin-bottom: 15px; }
+.setting-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
+.setting-input {
+    flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc; background: rgba(255,255,255,0.9);
+}
+.setting-btn-small {
+    background-color: #27ae60; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold;
+}
+.setting-btn-small:hover { background-color: #2ecc71; }
+
+/* ========================
+   BOUTIQUE (SHOP)
+   ======================== */
+
+.shop-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1000px;
+    padding: 20px;
+}
+
+.shop-card {
+    width: 280px;      /* Largeur fixe pour faire des carrés */
+    height: 280px;     /* Carré parfait comme sur ton dessin */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #e4c49f; /* Bois clair */
+    border: 4px solid #bfa07a;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet Gaming au survol */
+.shop-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    border-color: #2c5282; /* Bordure bleue sélection */
+}
+
+.shop-card:active {
+    transform: scale(0.98);
+}
+
+.shop-icon {
+    font-size: 80px;
+    color: #4a3b2a;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+}
+
+.shop-card h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+/* LISTE D'AMIS */
+.friend-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.friend-item {
+    background: rgba(255,255,255,0.8);
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #bfa07a;
+}
+
+.friend-name { font-weight: bold; color: #2c3e50; }
+.friend-status { font-size: 10px; color: #27ae60; } /* En ligne */
+
+.friend-actions { display: flex; gap: 5px; }
+
+.btn-accept { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+.btn-reject { background: #c0392b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+.btn-challenge { background: #e67e22; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-challenge:hover { transform: scale(1.05); }
+
+/* Animation Badge Notification */
+#notifBadge:not(.hidden) { animation: pulse 1s infinite; }
