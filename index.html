@@ -72,6 +72,22 @@
                     <div class="graveyard" id="graveyardBlack"></div> 
                     <div class="timer" id="timerBlack">10:00</div>
                 </div>
+                
+        <div id="gameControls" class="game-controls hidden">
+            <button id="btnDraw" class="control-btn draw-btn">🤝 PROPOSER NULLE</button>
+            <button id="btnResign" class="control-btn resign-btn">🏳️ ABANDONNER</button>
+        </div>
+
+        <div id="drawModal" class="modal hidden">
+            <div class="wood-panel modal-content" style="text-align: center;">
+                <h2>🤝 PROPOSITION DE NULLE</h2>
+                <p>Votre adversaire propose le match nul.</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                    <button id="btnAcceptDraw" class="menu-btn" style="background:#27ae60; width: auto;">ACCEPTER</button>
+                    <button id="btnDeclineDraw" class="menu-btn" style="background:#c0392b; width: auto;">REFUSER</button>
+                </div>
+            </div>
+        </div>
                 <div class="board" id="chessBoard"></div>
                 <div class="hud bottom-hud">
                     <div class="player-info"><div class="avatar-mini" style="background:#eee; color:black;">♙</div><span id="playerPseudoDisplay">MOI</span></div>

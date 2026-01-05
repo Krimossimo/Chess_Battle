@@ -289,3 +289,26 @@ body {
 .board.rotated .coord {
     transform: rotate(180deg); /* On retourne les lettres/chiffres */
 }
+
+/* CONTROLES DE JEU (En bas de l'écran de jeu) */
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.control-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    transition: transform 0.1s;
+}
+.control-btn:active { transform: scale(0.95); }
+
+.draw-btn { background-color: #7f8c8d; border-bottom: 4px solid #566566; }
+.resign-btn { background-color: #c0392b; border-bottom: 4px solid #922b21; }
