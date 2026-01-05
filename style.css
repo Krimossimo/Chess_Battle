@@ -276,3 +276,16 @@ body {
 
 /* Animation Badge Notification */
 #notifBadge:not(.hidden) { animation: pulse 1s infinite; }
+
+/* ROTATION PLATEAU */
+.board.rotated {
+    transform: rotate(180deg);
+}
+
+.board.rotated .square .piece {
+    transform: rotate(180deg); /* On retourne les pièces pour qu'elles restent droites */
+}
+
+.board.rotated .coord {
+    transform: rotate(180deg); /* On retourne les lettres/chiffres */
+}

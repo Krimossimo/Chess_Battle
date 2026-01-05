@@ -1,5 +1,8 @@
 // js/social.js
-import { db, auth, collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, onSnapshot, getDoc } from './firebase.js';
+import { db, auth, collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, onSnapshot, getDoc, addDoc } from './firebase.js';
+
+// IMPORTANT : On importe la fonction pour lancer le jeu qui se trouve dans main.js
+import { startOnlineGame } from './main.js';
 
 const socialModal = document.getElementById('socialModal');
 const btnSocial = document.getElementById('btnSocial');
@@ -8,23 +11,29 @@ const feedback = document.getElementById('socialFeedback');
 const notifBadge = document.getElementById('notifBadge');
 
 let currentUser = null;
+let gamesUnsubscribe = null; // Pour arrêter d'écouter les défis si besoin
 
-// Initialisation (appelée depuis main.js)
+// ==========================================
+// 1. INITIALISATION DU SYSTÈME SOCIAL
+// ==========================================
 export function initSocialSystem(user) {
     currentUser = user;
     
-    // Ecouteur pour ouvrir/fermer
+    // Ouverture / Fermeture Modale
     if(btnSocial) btnSocial.addEventListener('click', () => socialModal.classList.remove('hidden'));
     if(closeSocial) closeSocial.addEventListener('click', () => socialModal.classList.add('hidden'));
 
-    // Ecouteur Recherche
-    document.getElementById('btnSearchFriend').addEventListener('click', sendFriendRequest);
+    // Bouton Recherche Ami
+    document.getElementById('btnSearchFriend')?.addEventListener('click', sendFriendRequest);
 
-    // Lancer l'écoute en temps réel des données utilisateur
-    listenToUserData();
+    // Lancement des écoutes en temps réel
+    listenToUserData();      // Mes amis / Mes demandes
+    listenToIncomingGames(); // Les défis qu'on m'envoie
 }
 
-// 1. ÉCOUTER MES DONNÉES EN TEMPS RÉEL (Si je reçois une demande)
+// ==========================================
+// 2. ÉCOUTE DONNÉES UTILISATEUR (AMIS)
+// ==========================================
 function listenToUserData() {
     onSnapshot(doc(db, "users", auth.currentUser.uid), (docSnap) => {
         const data = docSnap.data();
@@ -35,15 +44,84 @@ function listenToUserData() {
     });
 }
 
-// 2. ENVOYER UNE DEMANDE
+// ==========================================
+// 3. ÉCOUTE DES DÉFIS ENTRANT (MULTIJOUEUR)
+// ==========================================
+function listenToIncomingGames() {
+    // On écoute toute la collection "games" (simplifié pour ce tuto)
+    const q = collection(db, "games");
+    
+    gamesUnsubscribe = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === "added" || change.type === "modified") {
+                const gameData = change.doc.data();
+                const gameId = change.doc.id;
+
+                // Si la partie est active ET que je suis dedans (White ou Black)
+                if (gameData.status === 'active' && (gameData.white === auth.currentUser.uid || gameData.black === auth.currentUser.uid)) {
+                    
+                    // Vérification simple pour éviter de relancer si on y est déjà
+                    const gameScreen = document.getElementById('gameScreen');
+                    if (!gameScreen.classList.contains('hidden')) return; 
+
+                    console.log("Partie détectée ! Lancement...");
+                    
+                    // On détermine ma couleur
+                    const myColor = (gameData.white === auth.currentUser.uid) ? 'white' : 'black';
+                    
+                    // On ferme tout
+                    socialModal.classList.add('hidden');
+                    document.getElementById('menuScreen').classList.add('hidden');
+                    
+                    // ET ON LANCE LE JEU !
+                    startOnlineGame(gameId, myColor);
+                }
+            }
+        });
+    });
+}
+
+// ==========================================
+// 4. CRÉER UN DÉFI (Bouton "DÉFIER")
+// ==========================================
+async function createGameChallenge(friendId) {
+    try {
+        const myId = auth.currentUser.uid;
+        
+        // Création de la partie dans Firestore
+        const docRef = await addDoc(collection(db, "games"), {
+            white: myId,       // Je crée, je suis les Blancs
+            black: friendId,   // Mon ami est les Noirs
+            status: 'active',  // Partie active immédiatement
+            turn: 'white',     // Aux blancs de jouer
+            lastMove: null,    // Plateau vide au début
+            createdAt: new Date().toISOString()
+        });
+
+        console.log("Partie créée avec ID:", docRef.id);
+        // Pas besoin de faire plus : la fonction listenToIncomingGames() va voir ce nouveau document
+        // et lancer la partie automatiquement pour moi aussi !
+        
+    } catch (e) {
+        console.error("Erreur création partie:", e);
+        alert("Erreur lors de la création du défi.");
+    }
+}
+
+// ==========================================
+// 5. GESTION AMIS (ENVOI, ACCEPT, REFUS)
+// ==========================================
+
+// Envoyer une demande
 async function sendFriendRequest() {
     const targetPseudo = document.getElementById('searchFriendInput').value.trim();
+    if(!targetPseudo) return;
     if(targetPseudo === currentUser.pseudo) { feedback.innerText = "C'est vous !"; return; }
 
     try {
         feedback.style.color = "black"; feedback.innerText = "Recherche...";
         
-        // Trouver l'ID du joueur via son pseudo
+        // 1. Trouver l'ID
         const q = query(collection(db, "users"), where("pseudo", "==", targetPseudo));
         const snap = await getDocs(q);
 
@@ -52,12 +130,12 @@ async function sendFriendRequest() {
         const targetDoc = snap.docs[0];
         const targetId = targetDoc.id;
 
-        // Vérif si déjà ami ou demande envoyée
+        // 2. Vérifs
         if(currentUser.friends && currentUser.friends.includes(targetId)) {
-            feedback.style.color = "orange"; feedback.innerText = "Vous êtes déjà amis."; return;
+            feedback.style.color = "orange"; feedback.innerText = "Déjà amis."; return;
         }
 
-        // Envoyer la demande (Ajouter mon ID dans son tableau 'friendRequests')
+        // 3. Envoyer
         await updateDoc(doc(db, "users", targetId), {
             friendRequests: arrayUnion(auth.currentUser.uid)
         });
@@ -71,7 +149,7 @@ async function sendFriendRequest() {
     }
 }
 
-// 3. AFFICHAGE DES DEMANDES
+// Afficher les demandes reçues
 async function updateRequestsUI(requestIds) {
     const container = document.getElementById('requestsList');
     const section = document.getElementById('requestsSection');
@@ -83,10 +161,9 @@ async function updateRequestsUI(requestIds) {
     }
 
     section.classList.remove('hidden');
-    notifBadge.classList.remove('hidden'); // Allume la lumière rouge
+    notifBadge.classList.remove('hidden');
     container.innerHTML = "";
 
-    // Pour chaque ID, on va chercher le pseudo (ça peut prendre un peu de temps)
     for (const id of requestIds) {
         const userSnap = await getDoc(doc(db, "users", id));
         if(userSnap.exists()) {
@@ -104,7 +181,7 @@ async function updateRequestsUI(requestIds) {
         }
     }
 
-    // Gestion Clics Accepter/Refuser
+    // Ecouteurs Accept/Reject
     document.querySelectorAll('.btn-accept').forEach(btn => {
         btn.addEventListener('click', () => acceptFriend(btn.dataset.id));
     });
@@ -113,33 +190,30 @@ async function updateRequestsUI(requestIds) {
     });
 }
 
-// 4. ACCEPTER AMI
+// Accepter Ami
 async function acceptFriend(senderId) {
     try {
         const myId = auth.currentUser.uid;
-
-        // 1. Ajouter à MA liste d'amis et retirer de MES requêtes
+        // Moi : Ajoute Ami + Retire Demande
         await updateDoc(doc(db, "users", myId), {
             friends: arrayUnion(senderId),
             friendRequests: arrayRemove(senderId)
         });
-
-        // 2. Ajouter à SA liste d'amis
+        // Lui : Ajoute Ami
         await updateDoc(doc(db, "users", senderId), {
             friends: arrayUnion(myId)
         });
-
     } catch(e) { console.error(e); }
 }
 
-// 5. REFUSER AMI
+// Refuser Ami
 async function rejectFriend(senderId) {
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
         friendRequests: arrayRemove(senderId)
     });
 }
 
-// 6. AFFICHAGE LISTE AMIS
+// Afficher Liste Amis + BOUTON DÉFIER
 async function updateFriendsUI(friendIds) {
     const container = document.getElementById('friendsList');
     container.innerHTML = "";
@@ -157,17 +231,21 @@ async function updateFriendsUI(friendIds) {
             div.className = 'friend-item';
             div.innerHTML = `
                 <span class="friend-name">${userData.pseudo}</span>
-                <button class="btn-challenge" data-id="${id}">DÉFIER ⚔️</button>
+                <button class="btn-challenge" data-id="${id}" style="background:#e67e22; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">
+                    DÉFIER ⚔️
+                </button>
             `;
             container.appendChild(div);
         }
     }
 
-    // Bouton Défier
+    // Clic sur DÉFIER -> Lancement de createGameChallenge
     document.querySelectorAll('.btn-challenge').forEach(btn => {
         btn.addEventListener('click', () => {
-            alert("Système de défi en cours de développement ! Bientôt tu pourras jouer contre " + btn.dataset.id);
-            // C'est ICI qu'on lancera la création de la partie multijoueur plus tard
+            const friendId = btn.dataset.id;
+            if(confirm("Lancer une partie contre cet ami ?")) {
+                createGameChallenge(friendId);
+            }
         });
     });
 }
