@@ -734,3 +734,165 @@ body {
     50% { transform: translate(-5px, 5px) rotate(0deg); }
     100% { transform: translate(0, 0) rotate(0deg); }
 }
+
+/* ========================
+   NOUVELLE BANNIERE JOUEUR
+   ======================== */
+.top-bar {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    z-index: 50;
+}
+
+.player-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #2c3e50 0%, #000000 100%); /* Fond sombre premium */
+    padding: 15px 30px;
+    border-radius: 50px; /* Forme de pilule */
+    border: 3px solid #cd7f32; /* Bordure Bronze par défaut */
+    box-shadow: 
+        0 10px 20px rgba(0,0,0,0.5),
+        inset 0 2px 5px rgba(255,255,255,0.1),
+        0 0 15px rgba(205, 127, 50, 0.3); /* Lueur Bronze */
+    min-width: 400px;
+    max-width: 600px;
+    color: white;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.player-banner:hover {
+    transform: translateY(2px);
+}
+
+/* --- AVATAR & BADGE --- */
+.banner-avatar {
+    position: relative;
+}
+
+.avatar-circle {
+    width: 70px;
+    height: 70px;
+    background: #e4c49f;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 35px;
+    color: #3b4a6b;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+.rank-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: #cd7f32; /* Couleur Bronze */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 16px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    cursor: help;
+}
+
+/* --- TEXTES --- */
+.banner-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#bannerPseudo {
+    margin: 0;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.banner-rank-text {
+    font-size: 12px;
+    color: #cd7f32; /* Texte Bronze */
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+/* --- BARRE ELO --- */
+.elo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.elo-bar-bg {
+    flex-grow: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.elo-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e67e22, #f1c40f);
+    width: 0%;
+    transition: width 1s ease-out;
+}
+
+.elo-text {
+    font-size: 12px;
+    font-family: monospace;
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+/* --- BOUTONS ACTIONS --- */
+.banner-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    padding-left: 15px;
+}
+
+.mini-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    display: flex; justify-content: center; align-items: center;
+}
+
+.mini-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+/* --- THEMES DE RANG (Pour le futur) --- */
+/* Classe à ajouter dynamiquement en JS sur .player-banner */
+.rank-silver { border-color: #bdc3c7; box-shadow: 0 0 15px rgba(189, 195, 199, 0.3); }
+.rank-silver .rank-badge, .rank-silver .banner-rank-text { color: #bdc3c7; background: #bdc3c7; color: #2c3e50; }
+
+.rank-gold { border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+.rank-gold .rank-badge, .rank-gold .banner-rank-text { color: #f1c40f; background: #f1c40f; color: #8e44ad; }

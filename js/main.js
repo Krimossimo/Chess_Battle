@@ -519,6 +519,18 @@ document.getElementById('btnDraw').addEventListener('click', async () => {
     }
 });
 
+// Ecouteur pour le bouton settings de la bannière
+document.getElementById('btnSettings')?.addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('hidden');
+});
+
+// Ecouteur pour le bouton shop de la bannière
+document.getElementById('miniShopBtn')?.addEventListener('click', () => {
+    menuScreen.classList.add('hidden');
+    shopScreen.classList.remove('hidden');
+    document.getElementById('shopPointsDisplay').innerHTML = `<i class="fas fa-shield-alt"></i> ${currentUserPoints} PTS`;
+});
+
 document.getElementById('btnAcceptDraw')?.addEventListener('click', async () => {
     await updateDoc(doc(db, "games", onlineGameId), { status: 'finished', winner: 'draw', reason: 'agreement', drawOffer: null });
     drawModal.classList.add('hidden');
@@ -571,8 +583,67 @@ function handlePromotion(p, startSquare, targetSquare){
 }
 document.querySelectorAll('.promo-option').forEach(o=>o.addEventListener('click',()=>promotionCallback&&promotionCallback(o.dataset.type)));
 
-function updateProfileUI(u){
-    document.querySelector('.profile-panel').innerHTML=`<span class="panel-title">${u.pseudo.toUpperCase()}</span>`;
-    document.querySelector('.points-panel span').innerHTML=`${u.points} PTS`;
-    if(playerPseudoDisplay) playerPseudoDisplay.innerText=u.pseudo.toUpperCase();
+// ============================================================
+// FONCTION DE MISE A JOUR UI (Bannière & Profil)
+// ============================================================
+function updateProfileUI(u) {
+    const points = u.points || 0;
+    
+    // 1. Calcul du Rang (Logique simple)
+    let rank = "BRONZE";
+    let rankColorClass = "rank-bronze"; // Par défaut dans le CSS
+    let rankIcon = "🥉";
+    let nextLevelPoints = 1500; // Objectif pour Silver
+    let baseLevelPoints = 0;
+
+    if (points >= 1500 && points < 2000) {
+        rank = "ARGENT";
+        rankColorClass = "rank-silver";
+        rankIcon = "🥈";
+        baseLevelPoints = 1500;
+        nextLevelPoints = 2000;
+    } else if (points >= 2000) {
+        rank = "OR";
+        rankColorClass = "rank-gold";
+        rankIcon = "🥇";
+        baseLevelPoints = 2000;
+        nextLevelPoints = 3000;
+    }
+
+    // 2. Mise à jour du DOM
+    const banner = document.querySelector('.player-banner');
+    const pseudoEl = document.getElementById('bannerPseudo');
+    const rankTitleEl = document.getElementById('bannerRankTitle');
+    const rankBadgeEl = document.getElementById('rankBadge');
+    const pointsEl = document.getElementById('bannerPoints');
+    const eloBar = document.getElementById('eloBar');
+
+    if(pseudoEl) pseudoEl.innerText = u.pseudo;
+    if(rankTitleEl) rankTitleEl.innerText = `RANG ${rank}`;
+    if(rankBadgeEl) rankBadgeEl.innerText = rankIcon;
+    if(pointsEl) pointsEl.innerText = `${points} PTS`;
+
+    // 3. Barre de progression (%)
+    // (Points actuels - Base du rang) / (Objectif rang suivant - Base du rang)
+    let percentage = 0;
+    if(nextLevelPoints > baseLevelPoints) {
+        percentage = ((points - baseLevelPoints) / (nextLevelPoints - baseLevelPoints)) * 100;
+    }
+    // On limite entre 5% (pour qu'on la voie un peu) et 100%
+    percentage = Math.max(5, Math.min(100, percentage));
+    
+    if(eloBar) eloBar.style.width = `${percentage}%`;
+
+    // 4. Couleur dynamique de la bannière
+    if(banner) {
+        banner.classList.remove('rank-silver', 'rank-gold'); // Reset
+        if(rankColorClass !== 'rank-bronze') {
+            banner.classList.add(rankColorClass);
+        }
+        // Note: Le bronze est le style par défaut dans le CSS
+    }
+    
+    // Mettre à jour aussi le pseudo en jeu
+    const inGameName = document.getElementById('playerPseudoDisplay');
+    if(inGameName) inGameName.innerText = u.pseudo.toUpperCase();
 }

@@ -46,14 +46,35 @@
     </div>
 
     <div id="menuScreen" class="screen hidden">
+        
         <div class="top-bar">
-            <div class="wood-panel profile-panel">
-                <span class="panel-title">CHARGEMENT...</span>
-            </div>
-            <div class="wood-panel points-panel">
-                <span>...</span>
+            <div class="player-banner">
+                <div class="banner-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div class="rank-badge" id="rankBadge">🥉</div>
+                </div>
+
+                <div class="banner-info">
+                    <h2 id="bannerPseudo">JOUEUR</h2>
+                    <div class="banner-rank-text" id="bannerRankTitle">RANG BRONZE</div>
+                    
+                    <div class="elo-container">
+                        <div class="elo-bar-bg">
+                            <div class="elo-bar-fill" id="eloBar" style="width: 20%;"></div>
+                        </div>
+                        <span class="elo-text" id="bannerPoints">1200 PTS</span>
+                    </div>
+                </div>
+                
+                <div class="banner-actions">
+                    <button id="miniShopBtn" class="mini-btn" title="Boutique"><i class="fas fa-shopping-cart"></i></button>
+                    <button id="btnSettings" class="mini-btn" title="Paramètres"><i class="fas fa-cog"></i></button>
+                </div>
             </div>
         </div>
+
         <h1 class="main-title">CHESS BATTLE</h1>
         <div class="menu-buttons">
             <button id="btnAI" class="menu-btn">JOUER CONTRE L'IA</button>
@@ -132,6 +153,7 @@
             </div>
         </div>
     </div>
+
     <div id="difficultyModal" class="modal hidden">
         <div class="wood-panel modal-content">
             <h2>NIVEAU IA</h2>
@@ -178,10 +200,6 @@
             </div>
         </div>
     </div>
-
-    <button id="btnSettings" class="settings-float-btn hidden">
-        <i class="fas fa-cog"></i>
-    </button>
 
     <div id="settingsModal" class="modal hidden">
         <div class="wood-panel modal-content" style="width: 450px; text-align: left;">
