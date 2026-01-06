@@ -1,118 +1,150 @@
 // js/rules.js
 
-function getPiece(square) {
-    if (!square) return null;
-    return square.querySelector('.piece');
+// 1. Fonction principale : Vérifie si un coup est "Sûr" (ne met pas notre roi en échec)
+export function isMoveSafe(startSquare, targetSquare, type, team) {
+    // A. Vérifie d'abord si le mouvement est géométriquement valide (règles de base)
+    if (!isValidGeometry(startSquare, targetSquare, type, team)) return false;
+
+    // B. SIMULATION DU COUP
+    const piece = startSquare.querySelector('.piece');
+    if (!piece) return false; // Sécurité anti-crash
+
+    const captured = targetSquare.querySelector('.piece'); // Pièce mangée potentielle
+    
+    // On joue le coup "pour de faux" dans le DOM
+    targetSquare.appendChild(piece);
+    if (captured) targetSquare.removeChild(captured); // On enlève temporairement la pièce mangée
+
+    // C. Vérifie si le Roi est en danger après ce mouvement
+    const myKingSquare = findKing(team);
+    const enemyTeam = (team === 'white') ? 'black' : 'white';
+    let isSafe = true;
+
+    // Si on trouve le roi, on regarde s'il est attaqué
+    if (myKingSquare && isSquareAttacked(myKingSquare, enemyTeam)) {
+        isSafe = false;
+    }
+
+    // D. ANNULATION DU COUP (Restauration)
+    startSquare.appendChild(piece); // On remet la pièce au départ
+    if (captured) targetSquare.appendChild(captured); // On remet la pièce mangée (si elle existait)
+
+    return isSafe;
 }
 
-export function isGeometricMoveValid(start, end, type, team) {
-    const sr = +start.dataset.row; const sc = +start.dataset.col;
-    const er = +end.dataset.row; const ec = +end.dataset.col;
-    const dr = er - sr; const dc = ec - sc;
-    const ar = Math.abs(dr); const ac = Math.abs(dc);
-    const targetPiece = getPiece(end);
-    const empty = !targetPiece;
-
-    function pathClear() {
-        const stepR = Math.sign(dr); const stepC = Math.sign(dc);
-        let r = sr + stepR; let c = sc + stepC;
-        while (r !== er || c !== ec) {
-            const sq = document.querySelector(`.square[data-row="${r}"][data-col="${c}"]`);
-            if (getPiece(sq)) return false;
-            r += stepR; c += stepC;
-        }
-        return true;
-    }
-
-    // PION
-    if (type === 'pawn') {
-        const dir = team === 'white' ? -1 : 1;
-        const startRow = team === 'white' ? 6 : 1;
-        // Avance 1
-        if (dc === 0 && dr === dir && empty) return true;
-        // Avance 2
-        if (dc === 0 && dr === dir * 2 && sr === startRow && empty && pathClear()) return true;
-        // Capture (Diagonale) - CORRIGÉ (ac === 1)
-        if (ac === 1 && dr === dir && !empty) return true;
-        return false;
-    }
-
-    // ROI & ROQUE
-    if (type === 'king') {
-        if (ar <= 1 && ac <= 1) return true;
-        // Roque
-        if (ar === 0 && ac === 2) {
-            const piece = getPiece(start);
-            if (piece.dataset.moved === "true") return false;
-            // Petit Roque
-            if (dc === 2) { 
-                const rook = getPiece(document.querySelector(`.square[data-row="${sr}"][data-col="7"]`));
-                if (rook && rook.dataset.moved !== "true" && pathClear()) return true;
-            }
-            // Grand Roque
-            if (dc === -2) {
-                const rook = getPiece(document.querySelector(`.square[data-row="${sr}"][data-col="0"]`));
-                // Vérifier si b1/b8 est vide aussi
-                const bColEmpty = !getPiece(document.querySelector(`.square[data-row="${sr}"][data-col="1"]`));
-                if (rook && rook.dataset.moved !== "true" && pathClear() && bColEmpty) return true;
-            }
-        }
-        return false;
-    }
-
-    if (type === 'rook') return (dr === 0 || dc === 0) && pathClear();
-    if (type === 'bishop') return ar === ac && pathClear();
-    if (type === 'knight') return (ar === 2 && ac === 1) || (ar === 1 && ac === 2);
-    if (type === 'queen') return ((dr === 0 || dc === 0) || ar === ac) && pathClear();
-    return false;
-}
-
-export function isSquareAttacked(square, team) {
-    if (!square) return false;
-    const squares = document.querySelectorAll('.square');
-    for (const sq of squares) {
-        const piece = getPiece(sq);
-        if (piece && piece.dataset.team === team) {
-            if (isGeometricMoveValid(sq, square, piece.dataset.type, piece.dataset.team)) return true;
-        }
-    }
-    return false;
-}
-
+// 2. Trouve la case du Roi
 export function findKing(team) {
-    const squares = document.querySelectorAll('.square');
-    for (const sq of squares) {
-        const piece = getPiece(sq);
-        if (piece && piece.dataset.type === 'king' && piece.dataset.team === team) return sq;
+    const pieces = document.querySelectorAll('.piece');
+    for (const p of pieces) {
+        if (p.dataset.type === 'king' && p.dataset.team === team) {
+            return p.parentElement;
+        }
     }
     return null;
 }
 
-export function isMoveSafe(start, end, type, team) {
-    if (!isGeometricMoveValid(start, end, type, team)) return false;
-    const target = getPiece(end);
-    if (target && target.dataset.team === team) return false;
+// 3. Vérifie si une case est attaquée par l'ennemi
+export function isSquareAttacked(targetSquare, attackerTeam) {
+    const allSquares = document.querySelectorAll('.square');
+    
+    for (const sq of allSquares) {
+        const piece = sq.querySelector('.piece');
+        // Si c'est une pièce ennemie
+        if (piece && piece.dataset.team === attackerTeam) {
+            // Est-ce qu'elle peut géométriquement atteindre la case cible ?
+            if (isValidGeometry(sq, targetSquare, piece.dataset.type, attackerTeam)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-    // Simulation
-    const movingPiece = getPiece(start);
-    const captured = target;
-    end.appendChild(movingPiece);
-    if (captured) captured.remove();
+// 4. Moteur des règles de déplacement (Géométrie pure)
+function isValidGeometry(start, target, type, team) {
+    const sRow = +start.dataset.row;
+    const sCol = +start.dataset.col;
+    const tRow = +target.dataset.row;
+    const tCol = +target.dataset.col;
 
-    const kingSquare = findKing(team);
-    // Sécurité si roi mangé
-    if (!kingSquare) {
-        start.appendChild(movingPiece);
-        if (captured) end.appendChild(captured);
+    const dRow = tRow - sRow;
+    const dCol = tCol - sCol;
+    const absRow = Math.abs(dRow);
+    const absCol = Math.abs(dCol);
+
+    // Règle 0 : On ne mange pas ses amis
+    const targetPiece = target.querySelector('.piece');
+    if (targetPiece && targetPiece.dataset.team === team) return false;
+
+    // PION
+    if (type === 'pawn') {
+        const direction = (team === 'white') ? -1 : 1; // Blanc monte (-1), Noir descend (+1)
+        const startRow = (team === 'white') ? 6 : 1; 
+        
+        // Avance de 1
+        if (dCol === 0 && dRow === direction && !targetPiece) return true;
+        // Avance de 2 (depuis départ)
+        if (dCol === 0 && dRow === direction * 2 && sRow === startRow && !targetPiece) {
+            // Vérifier chemin bloqué
+            const midRow = sRow + direction;
+            const midSquare = document.querySelector(`.square[data-row="${midRow}"][data-col="${sCol}"]`);
+            if (!midSquare.querySelector('.piece')) return true;
+        }
+        // Mange en diagonale
+        if (absCol === 1 && dRow === direction && targetPiece) return true;
+        
         return false;
     }
 
-    const enemy = team === 'white' ? 'black' : 'white';
-    const inCheck = isSquareAttacked(kingSquare, enemy);
+    // TOUR (Lignes)
+    if (type === 'rook') {
+        if (dRow !== 0 && dCol !== 0) return false; 
+        return isPathClear(start, target);
+    }
 
-    // Revert
-    start.appendChild(movingPiece);
-    if (captured) end.appendChild(captured);
+    // FOU (Diagonales)
+    if (type === 'bishop') {
+        if (absRow !== absCol) return false;
+        return isPathClear(start, target);
+    }
 
-    return !inCheck;
+    // REINE (Tour + Fou)
+    if (type === 'queen') {
+        if (dRow !== 0 && dCol !== 0 && absRow !== absCol) return false;
+        return isPathClear(start, target);
+    }
+
+    // CAVALIER (L)
+    if (type === 'knight') {
+        return (absRow === 2 && absCol === 1) || (absRow === 1 && absCol === 2);
+    }
+
+    // ROI (1 case)
+    if (type === 'king') {
+        return absRow <= 1 && absCol <= 1;
+    }
+
+    return false;
+}
+
+// Helper : Vérifie qu'il n'y a pas d'obstacle sur le chemin
+function isPathClear(start, target) {
+    const sRow = +start.dataset.row;
+    const sCol = +start.dataset.col;
+    const tRow = +target.dataset.row;
+    const tCol = +target.dataset.col;
+
+    const dRow = Math.sign(tRow - sRow);
+    const dCol = Math.sign(tCol - sCol);
+
+    let currRow = sRow + dRow;
+    let currCol = sCol + dCol;
+
+    while (currRow !== tRow || currCol !== tCol) {
+        const square = document.querySelector(`.square[data-row="${currRow}"][data-col="${currCol}"]`);
+        if (square && square.querySelector('.piece')) return false; // Obstacle !
+        currRow += dRow;
+        currCol += dCol;
+    }
+    return true;
 }

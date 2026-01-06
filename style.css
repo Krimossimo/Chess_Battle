@@ -54,28 +54,48 @@ body {
 .player-info { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .avatar-mini { width: 30px; height: 30px; border-radius: 5px; display: flex; justify-content: center; align-items: center; font-size: 20px;}
 
-/* TIMER */
+/* LE TIMER JOLI */
 .timer {
-    font-family: 'Courier New', monospace; font-size: 24px; background: #222; color: #f5f682;
-    padding: 5px 15px; border-radius: 4px; border: 2px solid #555; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    background: #111;
+    padding: 2px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-top: 2px;
 }
-.timer.active { background: #3b0e0e; color: #ff4b4b; border-color: #ff4b4b; animation: glow 1s infinite alternate; }
-@keyframes glow { from { box-shadow: 0 0 5px #ff4b4b; } to { box-shadow: 0 0 15px #ff4b4b; } }
+.timer.active {
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+    box-shadow: 0 0 10px #2ecc71;
+}
 
-/* CIMETIÈRE */
-.graveyard { display: flex; gap: -5px; height: 40px; flex-grow: 1; justify-content: center; padding: 0 20px; }
+/* CIMETIÈRE STYLÉ (Pièces empilées) */
+.graveyard {
+    height: 40px;
+    display: flex;
+    flex-wrap: wrap; /* Permet le retour à la ligne si trop de morts */
+    gap: -5px; /* Chevauchement */
+    padding-left: 10px;
+    align-items: center;
+}
 .dead-piece {
-    font-family: 'Segoe UI Emoji', sans-serif; font-size: 28px; width: 30px;
-    display: flex; justify-content: center; align-items: center;
-    animation: lootPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 24px;
+    width: 25px;
+    margin-right: -10px; /* Effet d'empilement */
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+    transition: transform 0.3s;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.dead-piece[data-team="white"] { color: #fff; text-shadow: 0 0 2px #000; }
-.dead-piece[data-team="black"] { color: #1a1a1a; text-shadow: 0 0 2px #fff; }
+.dead-piece:hover { transform: translateY(-10px) scale(1.2); z-index: 10; }
 
-@keyframes lootPop {
-    0% { transform: scale(0) translateY(-20px) rotate(-180deg); opacity: 0; }
-    60% { transform: scale(1.2); }
-    100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; }
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); }
 }
 
 /* ========================
@@ -89,12 +109,34 @@ body {
 .back-btn:hover { background-color: #31629e; transform: translateY(-2px); }
 
 .board {
-    display: grid; grid-template-columns: repeat(8, 70px); grid-template-rows: repeat(8, 70px);
-    border: 15px solid #bfa07a; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); background-color: #4a3b2a;
+    /* La clé pour qu'il soit grand : on se base sur la HAUTEUR de l'écran */
+    height: 90vh; 
+    width: 90vh;  /* Carré parfait */
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border: 15px solid #5d4037; /* Bordure bois épaisse */
+    box-shadow: 0 0 50px rgba(0,0,0,0.8); /* Ombre intense */
+    border-radius: 4px;
+    transition: transform 0.8s ease-in-out;
 }
-.square { width: 70px; height: 70px; position: relative; display: flex; justify-content: center; align-items: center; }
-.white-square { background-color: #e8dfbc; }
-.black-square { background-color: #966f4b; }
+.square {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    font-size: 5vh; /* La taille des pièces s'adapte à la hauteur de l'écran ! */
+    cursor: pointer;
+}
+
+.square .piece { 
+    transition: transform 0.8s ease-in-out; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.6)); 
+}
+
+.white-square { background-color: #f0d9b5; }
+.black-square { background-color: #b58863; }
 
 .card {
     background: #e4c49f; border: 4px solid #bfa07a; border-radius: 12px; padding: 25px;
@@ -139,15 +181,22 @@ body {
 /* Animation */
 .piece:hover { z-index: 20; transform: scale(1.15); }
 .piece:active { cursor: grabbing; transform: scale(1.15); }
-.piece.dragging { opacity: 0; }
+/* INDISPENSABLE POUR LE DRAG & DROP */
+.piece.dragging {
+    opacity: 0.5; /* On la rend un peu transparente pour mieux voir */
+    pointer-events: none; /* LA CLÉ MAGIQUE : Permet de traverser la pièce avec la souris */
+    cursor: grabbing;
+}
 
 /* INDICATEURS */
-.selected { background-color: rgba(245, 246, 130, 0.8) !important; box-shadow: inset 0 0 15px #c8ca34; }
+.hint { background-color: rgba(100, 255, 100, 0.5) !important; box-shadow: inset 0 0 10px #2ecc71; }
+.selected { background-color: rgba(255, 255, 100, 0.6) !important; }
 .hint::before { content: ''; position: absolute; width: 24px; height: 24px; background-color: rgba(0,0,0,0.25); border-radius: 50%; z-index: 5; pointer-events: none; }
 .capture-hint::before { content: ''; position: absolute; width: 66px; height: 66px; border: 6px solid rgba(0,0,0,0.2); border-radius: 50%; z-index: 5; pointer-events: none; }
-.king-in-check { background: radial-gradient(circle, #ff4b4b 40%, transparent 80%) !important; animation: pulse 1s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,75,75,0.7); } 70% { box-shadow: 0 0 0 15px rgba(255,75,75,0); } 100% { box-shadow: 0 0 0 0 rgba(255,75,75,0); } }
+.king-in-check { background: radial-gradient(circle, #e74c3c 20%, transparent 80%); }
+@keyframes pulseRed { 0% { opacity: 0.6; } 50% { opacity: 0.8; } 100% { opacity: 0.6; } }
 .error-shake { animation: shake 0.2s; } @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+.capture-hint { background-color: rgba(255, 80, 80, 0.6) !important; box-shadow: inset 0 0 15px #c0392b; animation: pulseRed 1s infinite; }
 
 /* Modales */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 100; }
@@ -290,25 +339,398 @@ body {
     transform: rotate(180deg); /* On retourne les lettres/chiffres */
 }
 
-/* CONTROLES DE JEU (En bas de l'écran de jeu) */
+/* BOUTONS ACTIONS */
 .game-controls {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
+    display: flex; justify-content: center; gap: 15px; margin: 10px 0;
+}
+.control-btn {
+    width: 50px; height: 50px;
+    border-radius: 12px;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+}
+.control-btn:active { transform: translateY(4px); box-shadow: none; }
+.draw-btn { background: #95a5a6; color: white; }
+.resign-btn { background: #e74c3c; color: white; }
+.menu-btn-small { background: #3498db; color: white; }
+/* Le conteneur principal prend tout l'écran sans scroll */
+#gameScreen {
+    width: 100vw;
+    height: 100vh;
+    background: #1a1c2c; /* Fond sombre pour faire ressortir le bois */
+    overflow: hidden;
+    display: flex; /* Active Flexbox */
 }
 
-.control-btn {
-    padding: 10px 20px;
+/* ZONE GAUCHE : LE PLATEAU GÉANT */
+.board-container {
+    flex: 1; /* Prend tout l'espace disponible */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png'); /* Fond cuir sombre */
+    padding: 20px;
+}
+
+/* ZONE DROITE : LA SIDEBAR (HUD) */
+.sidebar-hud {
+    width: 350px; /* Largeur fixe */
+    height: 100vh;
+    background: #2c3e50;
+    border-left: 5px solid #bfa07a;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    box-shadow: -10px 0 20px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.separator { border: 0; border-top: 1px solid #ffffff33; margin: 10px 0; }
+
+/* JOUEURS & TIMERS */
+.player-hud {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+}
+.avatar-mini {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 24px; border: 2px solid #bfa07a;
+}
+.player-details { display: flex; flex-direction: column; width: 100%; }
+.player-details span { font-weight: bold; color: #bfa07a; font-size: 14px; }
+
+/* NOUVELLE CARTE INFO (RPG STYLE) */
+.card-rpg {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    border: 2px solid #f1c40f;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    flex-grow: 1; /* Prend l'espace vide au milieu */
+    margin: 10px 0;
+    display: flex; flex-direction: column; justify-content: center;
+}
+/* Effet brillant sur la carte */
+.card-rpg::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    pointer-events: none;
+}
+.card-header { margin-bottom: 10px; }
+.avatar-large {
+    font-size: 60px;
+    background: rgba(0,0,0,0.3);
+    width: 80px; height: 80px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    border: 3px solid #f1c40f;
+    box-shadow: 0 0 15px #f1c40f;
+}
+.card-body h2 { margin: 5px 0; color: #f1c40f; font-family: 'Cinzel', serif; font-size: 22px; }
+.card-body p { font-size: 13px; color: #bdc3c7; line-height: 1.4; font-style: italic; }
+
+/* Quand le plateau est en mode "Drag", TOUTES les pièces laissent passer la souris */
+.board.is-dragging .piece {
+    pointer-events: none; 
+}
+
+/* Les pièces ennemies deviennent semi-transparentes pendant le drag */
+.board.is-dragging .piece[data-team]:not(.dragging) {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+/* Survol d'une pièce ennemie mangeable */
+.board.is-dragging .square:has(.piece):hover {
+    background-color: rgba(255, 80, 80, 0.4) !important;
+}
+
+/* FOND GÉNÉRAL PLUS CLAIR */
+body {
+    background: #f4e4bc; /* Couleur parchemin clair */
+    color: #4a3b2a;
+}
+
+/* LAYOUT DU JEU */
+.game-container-classic {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    gap: 30px;
+    padding: 20px;
+}
+
+/* ZONE CENTRALE (Verticale) */
+.center-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+/* PLATEAU BOIS CLASSIQUE */
+.board-frame {
+    padding: 10px;
+    background: #5c4033; /* Bordure bois foncé simple */
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Ombre douce */
+}
+
+.board.wood-theme {
+    height: 75vh; /* Taille ajustée */
+    width: 75vh;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    /* Pas de texture lourde, juste des couleurs propres */
+}
+
+.white-square { background-color: #ebd1a2; /* Bois clair */ }
+.black-square { background-color: #a67c52; /* Bois moyen */ }
+
+/* HUD (Timers & Cimetières) */
+.hud-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 75vh;
+    background: rgba(92, 64, 51, 0.1);
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #a67c52;
+}
+
+.player-label { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+.avatar-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #5c4033; }
+
+.timer-classic {
+    background: #333;
+    color: #fff;
+    font-family: monospace;
+    font-size: 22px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 2px solid #555;
+}
+.timer-classic.active { background: #fff; color: #000; border-color: #27ae60; }
+
+.graveyard-classic {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    height: 30px;
+    margin: 0 20px;
+}
+.dead-piece { font-size: 22px; margin-left: -5px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3)); }
+
+/* SIDEBAR & HISTORIQUE */
+.sidebar-classic {
+    width: 300px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.wood-panel-light {
+    background: #fff8e7;
+    border: 2px solid #a67c52;
+    border-radius: 8px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.wood-panel-light h3 {
+    background: #a67c52;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    margin: 0;
+    font-size: 16px;
+}
+
+.move-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+}
+.move-row {
+    display: flex;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+}
+.move-row:nth-child(even) { background: rgba(0,0,0,0.03); }
+.move-row span { flex: 1; text-align: center; }
+.header-row { font-weight: bold; border-bottom: 2px solid #ccc; margin-bottom: 5px; }
+
+/* BOUTONS TEXTE */
+.controls-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.control-btn-text {
+    padding: 12px;
     border: none;
     border-radius: 5px;
     font-weight: bold;
-    color: white;
     cursor: pointer;
-    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
     transition: transform 0.1s;
 }
-.control-btn:active { transform: scale(0.95); }
+.control-btn-text:active { transform: scale(0.98); }
+.resign { background: #c0392b; }
+.draw { background: #7f8c8d; }
+.menu { background: #2980b9; }
 
-.draw-btn { background-color: #7f8c8d; border-bottom: 4px solid #566566; }
-.resign-btn { background-color: #c0392b; border-bottom: 4px solid #922b21; }
+/* SUPPRESSION EFFETS LOURDS */
+.piece:hover { transform: scale(1.05); /* Effet réduit */ }
+.piece.dragging { opacity: 0.8; transform: scale(1.1); pointer-events: none; }
+.board.is-dragging .piece { pointer-events: none; } /* On garde la logique de sécurité */
+
+/* VICTOIRE */
+.victory-content {
+    background: #fff;
+    border: 5px solid #27ae60;
+    color: #2c3e50;
+}
+
+/* style.css - À AJOUTER À LA FIN */
+
+/* =========================================
+   ANIMATION "ULTIMATE MAT"
+   ========================================= */
+
+/* Le conteneur plein écran */
+#ultimateMatOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Au-dessus de TOUT */
+    pointer-events: none; /* Laisse passer les clics si besoin */
+}
+
+/* Le fond sombre qui apparaît progressivement */
+#ultimateMatOverlay.active {
+    background: rgba(0, 0, 0, 0.85);
+    animation: fadeInBG 0.5s ease-out forwards;
+}
+
+/* Le Flash blanc aveuglant */
+.mat-flash {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: white;
+    opacity: 0;
+}
+#ultimateMatOverlay.active .mat-flash {
+    animation: flashBurst 1.5s ease-out forwards;
+}
+
+/* Le conteneur du texte */
+.mat-container {
+    text-align: center;
+    opacity: 0;
+    transform: scale(2);
+}
+#ultimateMatOverlay.active .mat-container {
+    opacity: 1;
+    transform: scale(1);
+    /* L'animation du texte qui s'écrase */
+    animation: textSlam 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: 0.3s; /* Attendre un peu après le début du flash */
+}
+
+/* Le texte principal */
+.mat-text {
+    font-family: 'Arial Black', 'Impact', sans-serif;
+    font-size: 8vw; /* Énorme */
+    margin: 0;
+    color: #f1c40f; /* Or */
+    text-transform: uppercase;
+    /* Ombre portée agressive pour effet 3D */
+    text-shadow: 
+        0 0 10px rgba(241, 196, 15, 0.8),
+        0 5px 0 #c0392b,
+        0 10px 0 #8e44ad,
+        0 15px 20px rgba(0,0,0,1);
+    letter-spacing: 5px;
+}
+
+/* Le sous-texte */
+.mat-subtext {
+    font-size: 3vw;
+    color: white;
+    margin-top: 20px;
+    font-weight: bold;
+    letter-spacing: 10px;
+    opacity: 0;
+}
+#ultimateMatOverlay.active .mat-subtext {
+    animation: slideUpFade 0.5s ease-out forwards;
+    animation-delay: 1s;
+}
+
+/* EFFET DE TREMBLEMENT D'ÉCRAN */
+.screen-shake {
+    animation: shakeHard 0.5s ease-in-out;
+}
+
+/* --- KEYFRAMES (LES ANIMATIONS) --- */
+
+@keyframes fadeInBG { to { background: rgba(0,0,0,0.85); } }
+
+@keyframes flashBurst {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes textSlam {
+    0% { opacity: 0; transform: scale(5) translateY(-100px); filter: blur(10px); }
+    70% { opacity: 1; transform: scale(0.9); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shakeHard {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-15px, -15px) rotate(-2deg); }
+    20% { transform: translate(15px, 15px) rotate(2deg); }
+    30% { transform: translate(-15px, 10px) rotate(-1deg); }
+    40% { transform: translate(10px, -15px) rotate(1deg); }
+    50% { transform: translate(-5px, 5px) rotate(0deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}

@@ -63,43 +63,61 @@
         </div>
     </div>
 
-    <div id="gameScreen" class="screen hidden">
-        <button id="backToMenu" class="back-btn">⬅ Menu</button>
-        <div class="game-layout">
-            <div class="board-wrapper">
-                <div class="hud top-hud">
-                    <div class="player-info"><div class="avatar-mini" style="background:#333; color:white;">♟</div><span>ADVERSAIRE</span></div>
-                    <div class="graveyard" id="graveyardBlack"></div> 
-                    <div class="timer" id="timerBlack">10:00</div>
-                </div>
+    <div id="gameScreen" class="screen hidden" style="background: #fdf5e6;">
+        
+        <div class="game-container-classic">
+            
+            <div class="center-area">
                 
-        <div id="gameControls" class="game-controls hidden">
-            <button id="btnDraw" class="control-btn draw-btn">🤝 PROPOSER NULLE</button>
-            <button id="btnResign" class="control-btn resign-btn">🏳️ ABANDONNER</button>
-        </div>
+                <div class="hud-bar top">
+                    <div class="player-label">
+                        <span class="avatar-icon" style="background:#333; color:white;">♟</span>
+                        <span class="player-name-display opponent-name">ADVERSAIRE</span>
+                    </div>
+                    <div id="graveyardBlack" class="graveyard-classic"></div>
+                    <div id="timerBlack" class="timer-classic">10:00</div>
+                </div>
 
-        <div id="drawModal" class="modal hidden">
-            <div class="wood-panel modal-content" style="text-align: center;">
-                <h2>🤝 PROPOSITION DE NULLE</h2>
-                <p>Votre adversaire propose le match nul.</p>
-                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                    <button id="btnAcceptDraw" class="menu-btn" style="background:#27ae60; width: auto;">ACCEPTER</button>
-                    <button id="btnDeclineDraw" class="menu-btn" style="background:#c0392b; width: auto;">REFUSER</button>
+                <div class="board-frame">
+                    <div class="board wood-theme" id="chessBoard"></div>
+                </div>
+
+                <div class="hud-bar bottom">
+                    <div class="player-label">
+                        <span class="avatar-icon" style="background:#eee; color:black;">♙</span>
+                        <span class="player-name-display" id="playerPseudoDisplay">MOI</span>
+                    </div>
+                    <div id="graveyardWhite" class="graveyard-classic"></div>
+                    <div id="timerWhite" class="timer-classic">10:00</div>
+                </div>
+
+            </div>
+
+            <div class="sidebar-classic">
+                <div class="history-panel wood-panel-light">
+                    <h3>HISTORIQUE</h3>
+                    <div id="moveHistory" class="move-list">
+                        <div class="move-row header-row"><span>#</span><span>BLANC</span><span>NOIR</span></div>
+                        <div class="history-content"></div>
+                    </div>
+                </div>
+
+                <div id="gameControls" class="controls-panel">
+                    <button id="btnResign" class="control-btn-text resign">🏳️ ABANDONNER</button>
+                    <button id="btnDraw" class="control-btn-text draw">🤝 NULLE</button>
+                    <button id="backToMenu" class="control-btn-text menu">🏠 MENU</button>
                 </div>
             </div>
+
         </div>
-                <div class="board" id="chessBoard"></div>
-                <div class="hud bottom-hud">
-                    <div class="player-info"><div class="avatar-mini" style="background:#eee; color:black;">♙</div><span id="playerPseudoDisplay">MOI</span></div>
-                    <div class="graveyard" id="graveyardWhite"></div>
-                    <div class="timer" id="timerWhite">10:00</div>
-                </div>
-            </div>
-            <div class="card" id="infoCard">
-                <div class="avatar" id="cardAvatar"></div>
-                <h2 id="cardTitle">Prêt ?</h2>
-                <p id="cardDesc">La partie va commencer.</p>
-            </div>
+    </div>
+
+    <div id="victoryModal" class="modal hidden">
+        <div class="wood-panel modal-content victory-content">
+            <h1 id="victoryTitle" style="font-size: 40px; color: #27ae60; text-shadow: 2px 2px 0 #fff;">VICTOIRE !</h1>
+            <p id="victoryReason" style="font-size: 18px; margin: 10px 0;">Par échec et mat</p>
+            <div style="font-size: 60px; margin: 20px;">🏆</div>
+            <button id="btnVictoryOk" class="menu-btn" style="background:#27ae60; width:auto; padding: 10px 30px;">SUPER !</button>
         </div>
     </div>
 
@@ -258,6 +276,25 @@
                 <i class="fas fa-flag shop-icon"></i>
                 <h3>BANNIERE</h3>
             </div>
+        </div>
+    </div>
+
+    <div id="drawModal" class="modal hidden">
+        <div class="wood-panel modal-content" style="text-align: center;">
+            <h2>🤝 PROPOSITION DE NULLE</h2>
+            <p>Votre adversaire propose le match nul.</p>
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                <button id="btnAcceptDraw" class="menu-btn" style="background:#27ae60; width: auto;">ACCEPTER</button>
+                <button id="btnDeclineDraw" class="menu-btn" style="background:#c0392b; width: auto;">REFUSER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ultimateMatOverlay" class="hidden">
+        <div class="mat-flash"></div>
+        <div class="mat-container">
+            <h1 class="mat-text slam-effect">ÉCHEC ET MAT !</h1>
+            <div class="mat-subtext">VICTOIRE ÉCRASANTE</div>
         </div>
     </div>
 
