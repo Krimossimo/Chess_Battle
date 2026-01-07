@@ -1,251 +1,266 @@
 // js/social.js
-import { db, auth, collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, onSnapshot, getDoc, addDoc } from './firebase.js';
 
-// IMPORTANT : On importe la fonction pour lancer le jeu qui se trouve dans main.js
-import { startOnlineGame } from './main.js';
+// 1. IMPORTS FIREBASE
+import { db, doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, addDoc, onSnapshot } from './firebase.js';
 
-const socialModal = document.getElementById('socialModal');
-const btnSocial = document.getElementById('btnSocial');
-const closeSocial = document.getElementById('closeSocial');
-const feedback = document.getElementById('socialFeedback');
-const notifBadge = document.getElementById('notifBadge');
-
+// 2. VARIABLES LOCALES
 let currentUser = null;
-let gamesUnsubscribe = null; // Pour arrêter d'écouter les défis si besoin
+let startGameCallback = null; // C'est ici qu'on stockera la fonction startOnlineGame de main.js
 
-// ==========================================
-// 1. INITIALISATION DU SYSTÈME SOCIAL
-// ==========================================
-export function initSocialSystem(user) {
+// ============================================================
+// 3. INITIALISATION (Appelé par main.js)
+// ============================================================
+export function initSocialSystem(user, onGameStart) {
+    console.log("🔍 DEBUG - User reçu dans Social :", user); // On regarde ce qu'il y a dedans
+
+    // SÉCURITÉ : Si l'user n'a pas d'UID, on arrête tout avant que ça plante
+    if (!user || !user.uid) {
+        console.error("⛔ ERREUR CRITIQUE : L'objet user n'a pas d'UID ! Vérifie auth.js");
+        console.log("L'objet reçu est :", user);
+        return; // On stoppe ici pour éviter l'écran rouge
+    }
+
+    console.log("✅ Social System Loaded for:", user.pseudo);
     currentUser = user;
-    
-    // Ouverture / Fermeture Modale
-    if(btnSocial) btnSocial.addEventListener('click', () => socialModal.classList.remove('hidden'));
-    if(closeSocial) closeSocial.addEventListener('click', () => socialModal.classList.add('hidden'));
+    startGameCallback = onGameStart; 
 
-    // Bouton Recherche Ami
-    document.getElementById('btnSearchFriend')?.addEventListener('click', sendFriendRequest);
-
-    // Lancement des écoutes en temps réel
-    listenToUserData();      // Mes amis / Mes demandes
-    listenToIncomingGames(); // Les défis qu'on m'envoie
+    setupUIListeners();
+    listenToUserData(); 
 }
 
-// ==========================================
-// 2. ÉCOUTE DONNÉES UTILISATEUR (AMIS)
-// ==========================================
-function listenToUserData() {
-    onSnapshot(doc(db, "users", auth.currentUser.uid), (docSnap) => {
-        const data = docSnap.data();
-        currentUser = data; // Mise à jour locale
-        
-        updateRequestsUI(data.friendRequests || []);
-        updateFriendsUI(data.friends || []);
-    });
-}
+// ============================================================
+// 4. GESTION UI (Boutons & Modale)
+// ============================================================
+function setupUIListeners() {
+    const btnSocial = document.getElementById('btnSocial');
+    const modal = document.getElementById('socialModal');
+    const closeBtn = document.getElementById('closeSocial');
+    const btnSearch = document.getElementById('btnSearchFriend');
+    const inputSearch = document.getElementById('searchFriendInput');
 
-// ==========================================
-// 3. ÉCOUTE DES DÉFIS ENTRANT (MULTIJOUEUR)
-// ==========================================
-function listenToIncomingGames() {
-    // On écoute toute la collection "games" (simplifié pour ce tuto)
-    const q = collection(db, "games");
-    
-    gamesUnsubscribe = onSnapshot(q, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            if (change.type === "added" || change.type === "modified") {
-                const gameData = change.doc.data();
-                const gameId = change.doc.id;
+    // Ouverture Modale
+    if (btnSocial) {
+        btnSocial.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            renderFriendsList(); // Rafraîchir la liste à l'ouverture
+        });
+    }
 
-                // Si la partie est active ET que je suis dedans (White ou Black)
-                if (gameData.status === 'active' && (gameData.white === auth.currentUser.uid || gameData.black === auth.currentUser.uid)) {
-                    
-                    // Vérification simple pour éviter de relancer si on y est déjà
-                    const gameScreen = document.getElementById('gameScreen');
-                    if (!gameScreen.classList.contains('hidden')) return; 
+    // Fermeture Modale
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    }
 
-                    console.log("Partie détectée ! Lancement...");
-                    
-                    // On détermine ma couleur
-                    const myColor = (gameData.white === auth.currentUser.uid) ? 'white' : 'black';
-                    
-                    // On ferme tout
-                    socialModal.classList.add('hidden');
-                    document.getElementById('menuScreen').classList.add('hidden');
-                    
-                    // ET ON LANCE LE JEU !
-                    startOnlineGame(gameId, myColor);
-                }
+    // Recherche Ami
+    if (btnSearch) {
+        btnSearch.addEventListener('click', async () => {
+            const pseudoTarget = inputSearch.value.trim().toLowerCase();
+            const feedback = document.getElementById('socialFeedback');
+            
+            if (pseudoTarget === currentUser.pseudo.toLowerCase()) {
+                feedback.innerText = "Vous ne pouvez pas vous ajouter vous-même.";
+                feedback.style.color = "red";
+                return;
+            }
+
+            feedback.innerText = "Recherche en cours...";
+            
+            // Requête Firebase pour trouver l'ID via le pseudo
+            const q = query(collection(db, "users"), where("pseudo", "==", pseudoTarget));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                feedback.innerText = "Joueur introuvable.";
+                feedback.style.color = "red";
+            } else {
+                const targetUser = querySnapshot.docs[0];
+                sendFriendRequest(targetUser.id, targetUser.data().pseudo);
+                feedback.innerText = "Demande envoyée !";
+                feedback.style.color = "green";
+                inputSearch.value = "";
             }
         });
+    }
+}
+
+// ============================================================
+// 5. LOGIQUE SOCIALE (Firebase)
+// ============================================================
+
+// Envoyer une demande (Ami ou Défi)
+async function sendFriendRequest(targetUid, targetPseudo) {
+    // On ajoute une "request" dans le document de la CIBLE
+    const requestData = {
+        fromUid: currentUser.uid,
+        fromPseudo: currentUser.pseudo,
+        type: 'friend' // Pour l'instant juste ami, on fera défi plus tard
+    };
+
+    await updateDoc(doc(db, "users", targetUid), {
+        requests: arrayUnion(requestData)
     });
 }
 
-// ==========================================
-// 4. CRÉER UN DÉFI (Bouton "DÉFIER")
-// ==========================================
-async function createGameChallenge(friendId) {
+// Accepter une demande
+async function acceptRequest(req) {
     try {
-        const myId = auth.currentUser.uid;
-        
-        // Création de la partie dans Firestore
-        const docRef = await addDoc(collection(db, "games"), {
-            white: myId,       // Je crée, je suis les Blancs
-            black: friendId,   // Mon ami est les Noirs
-            status: 'active',  // Partie active immédiatement
-            turn: 'white',     // Aux blancs de jouer
-            lastMove: null,    // Plateau vide au début
-            createdAt: new Date().toISOString()
+        // 1. Ajouter l'ami réciproquement
+        const friendDataForMe = { uid: req.fromUid, pseudo: req.fromPseudo };
+        const friendDataForHim = { uid: currentUser.uid, pseudo: currentUser.pseudo };
+
+        await updateDoc(doc(db, "users", currentUser.uid), {
+            friends: arrayUnion(friendDataForMe),
+            requests: arrayRemove(req) // On supprime la demande
         });
 
-        console.log("Partie créée avec ID:", docRef.id);
-        // Pas besoin de faire plus : la fonction listenToIncomingGames() va voir ce nouveau document
-        // et lancer la partie automatiquement pour moi aussi !
-        
+        await updateDoc(doc(db, "users", req.fromUid), {
+            friends: arrayUnion(friendDataForHim)
+        });
+
+        // Mise à jour visuelle immédiate
+        alert(`Vous êtes maintenant ami avec ${req.fromPseudo} !`);
     } catch (e) {
-        console.error("Erreur création partie:", e);
-        alert("Erreur lors de la création du défi.");
+        console.error("Erreur acceptation :", e);
     }
 }
 
-// ==========================================
-// 5. GESTION AMIS (ENVOI, ACCEPT, REFUS)
-// ==========================================
+// Refuser une demande
+async function rejectRequest(req) {
+    await updateDoc(doc(db, "users", currentUser.uid), {
+        requests: arrayRemove(req)
+    });
+}
 
-// Envoyer une demande
-async function sendFriendRequest() {
-    const targetPseudo = document.getElementById('searchFriendInput').value.trim();
-    if(!targetPseudo) return;
-    if(targetPseudo === currentUser.pseudo) { feedback.innerText = "C'est vous !"; return; }
+// Lancer un défi à un ami déjà dans la liste
+async function challengeFriend(friendUid) {
+    if(confirm("Lancer une partie contre cet ami ?")) {
+        // 1. Créer la game
+        const newGameRef = await addDoc(collection(db, "games"), {
+            white: currentUser.uid,
+            black: friendUid,
+            status: 'active',
+            createdAt: new Date(),
+            moves: []
+        });
 
-    try {
-        feedback.style.color = "black"; feedback.innerText = "Recherche...";
-        
-        // 1. Trouver l'ID
-        const q = query(collection(db, "users"), where("pseudo", "==", targetPseudo));
-        const snap = await getDocs(q);
+        // 2. Dire à l'ami (et à moi) qu'on a une game active
+        // C'est ce champ 'activeGameId' qui va déclencher le jeu chez l'autre
+        await updateDoc(doc(db, "users", friendUid), { activeGameId: newGameRef.id });
+        await updateDoc(doc(db, "users", currentUser.uid), { activeGameId: newGameRef.id });
+    }
+}
 
-        if(snap.empty) { feedback.style.color = "red"; feedback.innerText = "Joueur introuvable."; return; }
+// ============================================================
+// 6. ECOUTE TEMPS RÉEL (Le cœur du système)
+// ============================================================
+function listenToUserData() {
+    // On écoute les changements sur NOTRE profil utilisateur
+    onSnapshot(doc(db, "users", currentUser.uid), (docSnap) => {
+        const data = docSnap.data();
+        if (!data) return;
 
-        const targetDoc = snap.docs[0];
-        const targetId = targetDoc.id;
+        // A. Mise à jour de la liste des demandes
+        updateRequestsList(data.requests || []);
 
-        // 2. Vérifs
-        if(currentUser.friends && currentUser.friends.includes(targetId)) {
-            feedback.style.color = "orange"; feedback.innerText = "Déjà amis."; return;
+        // B. Mise à jour de la liste d'amis
+        updateFriendsListHTML(data.friends || []);
+
+        // C. DETECTION LANCEMENT DE PARTIE (IMPORTANT !)
+        if (data.activeGameId) {
+            console.log("🔥 PARTIE DÉTECTÉE ! ID:", data.activeGameId);
+            
+            // 1. On détermine notre couleur
+            checkGameAndLaunch(data.activeGameId);
+
+            // 2. On nettoie le champ activeGameId pour ne pas re-déclencher au refresh
+            // (Optionnel : certains préfèrent le garder tant que la partie est active)
+            updateDoc(doc(db, "users", currentUser.uid), { activeGameId: null });
         }
+    });
+}
 
-        // 3. Envoyer
-        await updateDoc(doc(db, "users", targetId), {
-            friendRequests: arrayUnion(auth.currentUser.uid)
-        });
-
-        feedback.style.color = "green"; feedback.innerText = "Demande envoyée !";
-        document.getElementById('searchFriendInput').value = "";
-
-    } catch (e) {
-        console.error(e);
-        feedback.style.color = "red"; feedback.innerText = "Erreur : " + e.message;
+// Vérifie la game et lance le callback du main.js
+async function checkGameAndLaunch(gameId) {
+    const gameSnap = await getDoc(doc(db, "games", gameId));
+    if (gameSnap.exists()) {
+        const gData = gameSnap.data();
+        // Si je suis white, je suis white, sinon black
+        const myColor = (gData.white === currentUser.uid) ? 'white' : 'black';
+        
+        // APPEL AU MAIN.JS
+        if (startGameCallback) {
+            document.getElementById('socialModal').classList.add('hidden'); // On ferme la modale
+            startGameCallback(gameId, myColor);
+        }
     }
 }
 
-// Afficher les demandes reçues
-async function updateRequestsUI(requestIds) {
+// ============================================================
+// 7. RENDU HTML
+// ============================================================
+
+function updateRequestsList(requests) {
     const container = document.getElementById('requestsList');
     const section = document.getElementById('requestsSection');
     
-    if(requestIds.length === 0) {
+    if (!requests || requests.length === 0) {
         section.classList.add('hidden');
-        notifBadge.classList.add('hidden');
         return;
     }
 
     section.classList.remove('hidden');
-    notifBadge.classList.remove('hidden');
-    container.innerHTML = "";
+    container.innerHTML = '';
 
-    for (const id of requestIds) {
-        const userSnap = await getDoc(doc(db, "users", id));
-        if(userSnap.exists()) {
-            const userData = userSnap.data();
-            const div = document.createElement('div');
-            div.className = 'friend-item';
-            div.innerHTML = `
-                <span class="friend-name">${userData.pseudo}</span>
-                <div class="friend-actions">
-                    <button class="btn-accept" data-id="${id}">✔</button>
-                    <button class="btn-reject" data-id="${id}">✖</button>
-                </div>
-            `;
-            container.appendChild(div);
-        }
+    requests.forEach(req => {
+        const div = document.createElement('div');
+        div.className = 'friend-item';
+        div.innerHTML = `
+            <span class="friend-name">${req.fromPseudo}</span>
+            <div class="friend-actions">
+                <button class="btn-accept">✔</button>
+                <button class="btn-reject">✖</button>
+            </div>
+        `;
+        
+        // Listeners boutons
+        div.querySelector('.btn-accept').addEventListener('click', () => acceptRequest(req));
+        div.querySelector('.btn-reject').addEventListener('click', () => rejectRequest(req));
+        
+        container.appendChild(div);
+    });
+    
+    // Petit badge de notification sur le bouton principal
+    const badge = document.getElementById('notifBadge');
+    if(badge) {
+        badge.classList.remove('hidden');
+        badge.innerText = requests.length;
     }
-
-    // Ecouteurs Accept/Reject
-    document.querySelectorAll('.btn-accept').forEach(btn => {
-        btn.addEventListener('click', () => acceptFriend(btn.dataset.id));
-    });
-    document.querySelectorAll('.btn-reject').forEach(btn => {
-        btn.addEventListener('click', () => rejectFriend(btn.dataset.id));
-    });
 }
 
-// Accepter Ami
-async function acceptFriend(senderId) {
-    try {
-        const myId = auth.currentUser.uid;
-        // Moi : Ajoute Ami + Retire Demande
-        await updateDoc(doc(db, "users", myId), {
-            friends: arrayUnion(senderId),
-            friendRequests: arrayRemove(senderId)
-        });
-        // Lui : Ajoute Ami
-        await updateDoc(doc(db, "users", senderId), {
-            friends: arrayUnion(myId)
-        });
-    } catch(e) { console.error(e); }
-}
-
-// Refuser Ami
-async function rejectFriend(senderId) {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        friendRequests: arrayRemove(senderId)
-    });
-}
-
-// Afficher Liste Amis + BOUTON DÉFIER
-async function updateFriendsUI(friendIds) {
+function updateFriendsListHTML(friends) {
     const container = document.getElementById('friendsList');
-    container.innerHTML = "";
+    container.innerHTML = '';
 
-    if(friendIds.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#666;">Pas encore d\'amis.</p>';
+    if (!friends || friends.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; font-style:italic;">Aucun ami pour le moment.</p>';
         return;
     }
 
-    for (const id of friendIds) {
-        const userSnap = await getDoc(doc(db, "users", id));
-        if(userSnap.exists()) {
-            const userData = userSnap.data();
-            const div = document.createElement('div');
-            div.className = 'friend-item';
-            div.innerHTML = `
-                <span class="friend-name">${userData.pseudo}</span>
-                <button class="btn-challenge" data-id="${id}" style="background:#e67e22; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">
-                    DÉFIER ⚔️
-                </button>
-            `;
-            container.appendChild(div);
-        }
-    }
+    friends.forEach(friend => {
+        const div = document.createElement('div');
+        div.className = 'friend-item';
+        div.innerHTML = `
+            <span class="friend-name">👤 ${friend.pseudo}</span>
+            <button class="btn-challenge">⚔️ DÉFIER</button>
+        `;
 
-    // Clic sur DÉFIER -> Lancement de createGameChallenge
-    document.querySelectorAll('.btn-challenge').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const friendId = btn.dataset.id;
-            if(confirm("Lancer une partie contre cet ami ?")) {
-                createGameChallenge(friendId);
-            }
-        });
+        div.querySelector('.btn-challenge').addEventListener('click', () => challengeFriend(friend.uid));
+        container.appendChild(div);
     });
+}
+
+// Helper si on veut forcer le refresh
+function renderFriendsList() {
+    // La mise à jour se fait automatiquement via listenToUserData, 
+    // mais on peut utiliser cette fonction pour des états de chargement si besoin.
 }

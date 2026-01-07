@@ -78,7 +78,7 @@
 
             <div class="rpg-col center-col">
                 <button class="rpg-main-btn white">JOUER</button>
-                <button id="btnSearchFriend" class="rpg-main-btn white">JOUER CONTRE UN AMI</button>
+                <button id="btnSocial" class="rpg-main-btn white">JOUER CONTRE UN AMI</button>
                 <button id="btnAI" class="rpg-main-btn white">JOUER CONTRE L'IA</button>
                 <button class="rpg-main-btn white">ENTRAÎNEMENT</button>
             </div>
@@ -270,41 +270,39 @@
         </div>
     </div>
 
-    <div id="shopScreen" class="screen hidden">
+    <div id="shopScreen" class="screen rpg-background hidden">
         
-        <div class="top-bar" style="position: relative; top: 0; margin-bottom: 30px; width: 90%; max-width: 1000px;">
-            <button id="backFromShop" class="back-btn" style="position: relative; top: auto; left: auto;">
-                <i class="fas fa-arrow-left"></i> MENU
+        <div class="rpg-header">
+            <button id="backFromShop" class="rpg-back-btn">
+                <i class="fas fa-arrow-left"></i> RETOUR
             </button>
-            
-            <div class="wood-panel points-panel" style="min-width: 300px;">
-                <span id="shopPointsDisplay"><i class="fas fa-shield-alt"></i> CHARGEMENT...</span>
+            <h1 class="rpg-title-small">BOUTIQUE</h1>
+            <div class="rpg-currency">
+                <span id="shopPointsDisplay">0</span>
+                <div class="coin-icon">$</div>
             </div>
         </div>
 
-        <div class="shop-grid">
-            <div class="wood-panel shop-card">
-                <i class="fas fa-chess-board shop-icon"></i>
-                <h3>PLATEAU</h3>
-            </div>
-            <div class="wood-panel shop-card">
-                <i class="fas fa-magic shop-icon"></i>
-                <h3>ANIMATIONS</h3>
-            </div>
-            <div class="wood-panel shop-card">
-                <i class="fas fa-chess-pawn shop-icon"></i>
-                <h3>PIONS</h3>
-            </div>
-
-            <div class="wood-panel shop-card">
-                <i class="fas fa-user-circle shop-icon"></i>
-                <h3>AVATAR</h3>
-            </div>
-            <div class="wood-panel shop-card">
-                <i class="fas fa-flag shop-icon"></i>
-                <h3>BANNIERE</h3>
-            </div>
+        <div class="rpg-tabs">
+            <button class="tab-btn active" data-tab="boards">PLATEAUX</button>
+            <button class="tab-btn" data-tab="pieces">PIÈCES</button>
         </div>
+
+        <div id="shopContainer" class="rpg-grid-scroll">
+            </div>
+    </div>
+
+    <div id="collectionScreen" class="screen rpg-background hidden">
+        
+        <div class="rpg-header">
+            <button id="backFromCollection" class="rpg-back-btn">
+                <i class="fas fa-arrow-left"></i> RETOUR
+            </button>
+            <h1 class="rpg-title-small">MA COLLECTION</h1>
+        </div>
+
+        <div id="collectionContainer" class="rpg-grid-scroll">
+            </div>
     </div>
 
     <div id="drawModal" class="modal hidden">
@@ -327,5 +325,7 @@
     </div>
 
     <script type="module" src="js/main.js"></script>
+    <script src="js/ui.js"></script> 
+    <script src="ui.js"></script>
 </body>
 </html>
