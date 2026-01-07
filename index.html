@@ -45,42 +45,52 @@
         </div>
     </div>
 
-    <div id="menuScreen" class="screen hidden">
+    <div id="menuScreen" class="screen rpg-background">
         
-        <div class="top-bar">
-            <div class="player-banner">
-                <div class="banner-avatar">
-                    <div class="avatar-circle">
-                        <i class="fas fa-user-astronaut"></i>
-                    </div>
-                    <div class="rank-badge" id="rankBadge">🥉</div>
+        <div class="rpg-header">
+            <div class="rpg-profile-card">
+                <div class="profile-avatar-frame">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=King" alt="Avatar" class="profile-img">
                 </div>
+                <div class="profile-text">
+                    <div id="displayPseudo" class="profile-name">PSEUDO</div>
+                    <div class="profile-rank"><i class="fas fa-gem"></i> RANG DIAMANT IV</div>
+                </div>
+            </div>
 
-                <div class="banner-info">
-                    <h2 id="bannerPseudo">JOUEUR</h2>
-                    <div class="banner-rank-text" id="bannerRankTitle">RANG BRONZE</div>
-                    
-                    <div class="elo-container">
-                        <div class="elo-bar-bg">
-                            <div class="elo-bar-fill" id="eloBar" style="width: 20%;"></div>
-                        </div>
-                        <span class="elo-text" id="bannerPoints">1200 PTS</span>
-                    </div>
-                </div>
-                
-                <div class="banner-actions">
-                    <button id="miniShopBtn" class="mini-btn" title="Boutique"><i class="fas fa-shopping-cart"></i></button>
-                    <button id="btnSettings" class="mini-btn" title="Paramètres"><i class="fas fa-cog"></i></button>
-                </div>
+            <div class="rpg-currency">
+                <span id="displayPoints">2450</span>
+                <div class="coin-icon">$</div>
             </div>
         </div>
 
-        <h1 class="main-title">CHESS BATTLE</h1>
-        <div class="menu-buttons">
-            <button id="btnAI" class="menu-btn">JOUER CONTRE L'IA</button>
-            <button id="btn10min" class="menu-btn">1 VS 1 (10 MIN)</button>
-            <button id="btn3min" class="menu-btn">BLITZ (3 MIN)</button>
-            <button id="btnShop" class="menu-btn" style="background-color: #e67e22;">BOUTIQUE 🛒</button>
+        <h1 class="rpg-title">CHESS<span style="color:#34495e;">BATTLE</span></h1>
+
+        <div class="rpg-grid">
+            
+            <div class="rpg-col left-col">
+                <h3 class="col-title">DEFI JOURNALIER</h3>
+                <div class="quest-btn orange">RÉUSSIR UNE PROMOTION</div>
+                <div class="quest-btn orange">MAT AVEC UN CAVALIER</div>
+                
+                <div style="flex-grow:1"></div> <button id="btnShop" class="rpg-main-btn blue">BOUTIQUE</button>
+            </div>
+
+            <div class="rpg-col center-col">
+                <button class="rpg-main-btn white">JOUER</button>
+                <button id="btnSearchFriend" class="rpg-main-btn white">JOUER CONTRE UN AMI</button>
+                <button id="btnAI" class="rpg-main-btn white">JOUER CONTRE L'IA</button>
+                <button class="rpg-main-btn white">ENTRAÎNEMENT</button>
+            </div>
+
+            <div class="rpg-col right-col">
+                <h3 class="col-title">FAVORIS</h3>
+                <button id="btn10min" class="rpg-main-btn white small-text">LANCER PARTIE 10 MIN</button>
+                <button id="btn3min" class="rpg-main-btn white small-text">LANCER PARTIE 3 MIN</button>
+                
+                <div style="flex-grow:1"></div> <button class="rpg-main-btn red">MA COLLECTION</button>
+            </div>
+
         </div>
     </div>
 

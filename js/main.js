@@ -612,16 +612,20 @@ function updateProfileUI(u) {
 
     // 2. Mise à jour du DOM
     const banner = document.querySelector('.player-banner');
-    const pseudoEl = document.getElementById('bannerPseudo');
+    const pseudoEl = document.getElementById('displayPseudo');
     const rankTitleEl = document.getElementById('bannerRankTitle');
     const rankBadgeEl = document.getElementById('rankBadge');
-    const pointsEl = document.getElementById('bannerPoints');
+    const pointsEl = document.getElementById('displayPoints');
     const eloBar = document.getElementById('eloBar');
+    const gamePseudo = document.getElementById('playerPseudoDisplay');
+    const rankEl = document.querySelector('.profile-rank');
 
-    if(pseudoEl) pseudoEl.innerText = u.pseudo;
+    if (pseudoEl) pseudoEl.innerText = user.pseudo.toUpperCase();
     if(rankTitleEl) rankTitleEl.innerText = `RANG ${rank}`;
     if(rankBadgeEl) rankBadgeEl.innerText = rankIcon;
-    if(pointsEl) pointsEl.innerText = `${points} PTS`;
+    if (pointsEl) pointsEl.innerText = user.points;
+    if (gamePseudo) gamePseudo.innerText = user.pseudo.toUpperCase();
+    if (rankEl && user.rank) rankEl.innerHTML = `<i class="fas fa-gem"></i> ${user.rank}`;
 
     // 3. Barre de progression (%)
     // (Points actuels - Base du rang) / (Objectif rang suivant - Base du rang)
